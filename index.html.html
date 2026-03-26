@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>職種診断 | 未経験ナビ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--teal:#0F6E56;--teal-light:#E1F5EE;--teal-mid:#1D9E75;--teal-dark:#085041;
+--white:#FFFFFF;--gray-50:#F8FAF9;--gray-100:#F1F5F3;--gray-200:#D6DDD9;
+--gray-500:#6B7C73;--gray-800:#2A3530;
+--coral:#D85A30;--blue:#378ADD;--purple:#7F77DD;--amber:#BA7517;
+--pink:#D4537E;--green:#639922;--red:#E24B4A;--indigo:#534AB7;
+--radius:12px;--shadow:0 2px 16px rgba(15,110,86,0.08);
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray-50);color:var(--gray-800);line-height:1.7;min-height:100vh}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:32px 0 24px}
+.header::after{content:'';display:block;width:48px;height:3px;background:var(--teal);margin:16px auto 0;border-radius:2px}
+.brand{font-size:11px;font-weight:500;color:var(--teal-mid);letter-spacing:2px;margin-bottom:4px}
+.header h1{font-size:22px;font-weight:700;color:var(--teal-dark);line-height:1.4}
+.header p{font-size:13px;color:var(--gray-500);margin-top:8px}
+.progress-wrap{margin:20px 0;position:sticky;top:0;z-index:10;background:var(--gray-50);padding:8px 0 12px}
+.progress-bar{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-mid));border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-text{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-500);font-weight:500}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 24px;margin-bottom:16px;border:1px solid rgba(15,110,86,0.06)}
+.question-num{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:1px;margin-bottom:8px}
+.question-text{font-size:17px;font-weight:700;color:var(--gray-800);line-height:1.5;margin-bottom:20px}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--gray-200);border-radius:10px;cursor:pointer;transition:all .2s ease;background:var(--white);-webkit-tap-highlight-color:transparent;user-select:none}
+.option:active{transform:scale(0.98)}
+.option.selected{border-color:var(--teal);background:var(--teal-light)}
+.option.selected .option-marker{background:var(--teal);color:var(--white);border-color:var(--teal)}
+.option-marker{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gray-500);flex-shrink:0;transition:all .2s ease}
+.option-text{font-size:14px;font-weight:500;color:var(--gray-800);line-height:1.4}
+.btn-wrap{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s ease;font-family:inherit}
+.btn-primary{background:var(--teal);color:var(--white)}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-primary:disabled{background:var(--gray-200);color:var(--gray-500);cursor:not-allowed}
+.btn-secondary{background:var(--gray-100);color:var(--gray-500)}
+.btn-secondary:hover{background:var(--gray-200)}
+.start-screen{text-align:center}
+.start-screen .icon-wrap{width:80px;height:80px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.start-screen .icon-wrap svg{width:40px;height:40px;color:var(--teal)}
+.start-screen h2{font-size:20px;font-weight:700;color:var(--teal-dark);margin-bottom:8px}
+.start-screen p{font-size:14px;color:var(--gray-500);margin-bottom:24px;line-height:1.6}
+.start-features{display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:24px}
+.start-feature{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gray-800);font-weight:500}
+.start-feature .check{width:20px;height:20px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.start-feature .check svg{width:12px;height:12px;color:var(--teal)}
+.btn-start{width:100%;padding:16px;background:var(--teal);color:var(--white);border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-start:hover{background:var(--teal-dark)}
+.result{display:none}
+.result-badge{display:inline-block;padding:6px 16px;background:var(--teal-light);color:var(--teal);font-size:12px;font-weight:700;border-radius:20px;letter-spacing:1px;margin-bottom:12px}
+.result-type{font-size:28px;font-weight:700;margin-bottom:4px}
+.result-subtitle{font-size:14px;color:var(--gray-500);margin-bottom:20px}
+.result-desc{font-size:14px;color:var(--gray-800);line-height:1.8;margin-bottom:20px;padding:16px;background:var(--gray-50);border-radius:10px;border-left:3px solid var(--teal)}
+.result-scores{margin-bottom:24px}
+.result-scores h3{font-size:13px;font-weight:700;color:var(--gray-500);margin-bottom:12px;letter-spacing:1px}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.score-label{width:90px;font-size:12px;font-weight:500;color:var(--gray-800);flex-shrink:0}
+.score-bar-bg{flex:1;height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.score-pct{width:36px;font-size:12px;font-weight:700;color:var(--gray-500);text-align:right}
+.cta-section{text-align:center;padding:24px;background:var(--teal-light);border-radius:var(--radius);margin-top:20px}
+.cta-section h3{font-size:16px;font-weight:700;color:var(--teal-dark);margin-bottom:8px}
+.cta-section p{font-size:13px;color:var(--gray-500);margin-bottom:16px}
+.btn-cta{display:block;padding:14px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;transition:all .2s;font-family:inherit;background:var(--teal);color:var(--white)}
+.btn-cta:hover{background:var(--teal-dark)}
+.fade-in{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:var(--gray-500)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">未経験ナビ</div>
+    <h1>あなたに向いてる職種診断</h1>
+    <p>12問の質問に答えるだけ（約2分）</p>
+  </div>
+  <div id="startScreen" class="card start-screen">
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    </div>
+    <h2>未経験からの正社員転職</h2>
+    <p>あなたの性格や希望に合った<br>ピッタリの職種を診断します</p>
+    <div class="start-features">
+      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>全12問・約2分で完了</div>
+      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>8つの職種タイプから診断</div>
+      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>結果に合った求人をご紹介</div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">診断をはじめる</button>
+  </div>
+  <div id="quizSection" class="hidden">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text"><span id="progressLabel">Q1 / 12</span><span id="progressPct">0%</span></div>
+    </div>
+    <div class="card fade-in" id="questionCard">
+      <div class="question-num" id="qNum">Q1</div>
+      <div class="question-text" id="qText"></div>
+      <div class="options" id="optionsWrap"></div>
+      <div class="btn-wrap">
+        <button class="btn btn-secondary" id="btnBack" onclick="goBack()">戻る</button>
+        <button class="btn btn-primary" id="btnNext" onclick="goNext()" disabled>次へ</button>
+      </div>
+    </div>
+  </div>
+  <div id="resultSection" class="result">
+    <div class="card fade-in" style="text-align:center">
+      <div class="result-badge">診断結果</div>
+      <div class="result-type" id="resultType"></div>
+      <div class="result-subtitle" id="resultSubtitle"></div>
+      <div class="result-desc" id="resultDesc" style="text-align:left"></div>
+      <div class="result-scores" id="resultScores" style="text-align:left">
+        <h3>あなたの適性スコア TOP5</h3>
+        <div id="scoreBars"></div>
+      </div>
+      <div class="cta-section">
+        <h3>この職種の求人、ご紹介できます</h3>
+        <p>キャリアアドバイザーがあなたに合った<br>求人を無料でご紹介します</p>
+        <a href="https://lin.ee/mFj9ZwL" class="btn-cta" id="ctaLineBtn">LINEで診断結果を送る</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer">&copy; 未経験ナビ｜HONEST STAFF 紹介事業部</div>
+</div>
+<script>
+const questions=[
+{text:"休日はどう過ごすことが多い？",options:[
+{text:"友達と出かける・人と会う",scores:{sales:3,mobile:2,call:1,care:1,office:0,it:0,construction:0,factory:0}},
+{text:"家でゲームや動画を楽しむ",scores:{it:3,office:2,call:1,factory:1,sales:0,mobile:0,construction:0,care:0}},
+{text:"体を動かす・スポーツ",scores:{construction:3,factory:2,care:1,sales:1,it:0,office:0,mobile:0,call:0}},
+{text:"買い物やカフェでゆっくり",scores:{mobile:3,office:2,call:1,care:1,sales:0,it:0,construction:0,factory:0}}
+]},
+{text:"仕事で一番大事にしたいのは？",options:[
+{text:"頑張った分だけ稼ぎたい",scores:{sales:3,construction:2,it:1,mobile:0,office:0,call:0,factory:0,care:0}},
+{text:"手に職をつけて安定したい",scores:{it:3,construction:3,factory:2,office:1,sales:0,mobile:0,call:0,care:0}},
+{text:"人に感謝される仕事がいい",scores:{care:3,mobile:2,call:2,sales:1,it:0,office:0,construction:0,factory:0}},
+{text:"決まった時間で働きたい",scores:{office:3,factory:3,call:2,mobile:1,sales:0,it:0,construction:0,care:0}}
+]},
+{text:"初対面の人と話すのは？",options:[
+{text:"得意！どんどん話せる",scores:{sales:3,mobile:3,care:1,call:1,it:0,office:0,construction:0,factory:0}},
+{text:"慣れれば話せる",scores:{call:2,mobile:2,care:2,construction:1,sales:1,it:0,office:0,factory:0}},
+{text:"聞き役になることが多い",scores:{care:2,call:2,office:2,construction:1,it:1,sales:0,mobile:0,factory:0}},
+{text:"正直あまり得意じゃない",scores:{it:3,factory:3,office:2,construction:1,sales:0,mobile:0,call:0,care:0}}
+]},
+{text:"学生時代、どんなタイプだった？",options:[
+{text:"部活やイベントに全力投球",scores:{construction:3,sales:2,care:1,factory:1,it:0,office:0,mobile:0,call:0}},
+{text:"リーダーや仕切り役が多かった",scores:{sales:3,construction:2,mobile:1,care:1,it:0,office:0,call:0,factory:0}},
+{text:"コツコツ勉強・研究タイプ",scores:{it:3,office:3,factory:1,call:1,sales:0,mobile:0,construction:0,care:0}},
+{text:"友達が広く浅く多かった",scores:{mobile:3,call:2,care:1,sales:1,it:0,office:0,construction:0,factory:0}}
+]},
+{text:"パソコンやスマホの操作は？",options:[
+{text:"大好き！新しいアプリもすぐ試す",scores:{it:3,mobile:2,office:1,call:1,sales:0,construction:0,factory:0,care:0}},
+{text:"Excel・Wordなら使える",scores:{office:3,call:2,it:1,sales:1,mobile:0,construction:0,factory:0,care:0}},
+{text:"SNSやLINEくらいなら",scores:{mobile:2,call:2,care:2,sales:1,it:0,office:0,construction:0,factory:0}},
+{text:"あまり得意じゃない",scores:{construction:3,factory:3,care:2,sales:1,it:0,office:0,mobile:0,call:0}}
+]},
+{text:"年収はどれくらい目指したい？",options:[
+{text:"20代で500万以上を目指す",scores:{sales:3,construction:3,it:2,factory:0,mobile:0,office:0,call:0,care:0}},
+{text:"400万あれば十分",scores:{it:2,construction:2,sales:1,office:1,factory:1,call:0,mobile:0,care:0}},
+{text:"まずは300万から安定して",scores:{mobile:2,call:2,office:2,care:2,factory:2,sales:0,it:0,construction:0}},
+{text:"お金より働きやすさ重視",scores:{office:3,care:2,call:2,factory:1,mobile:1,sales:0,it:0,construction:0}}
+]},
+{text:"次のうち、やってみたいのは？",options:[
+{text:"お客様に最適な提案をする",scores:{sales:3,mobile:2,care:1,call:1,it:0,office:0,construction:0,factory:0}},
+{text:"建物やインフラを作り上げる",scores:{construction:3,factory:2,it:0,sales:0,mobile:0,office:0,call:0,care:0}},
+{text:"データ入力や書類作成を正確に",scores:{office:3,call:2,it:1,factory:1,sales:0,mobile:0,construction:0,care:0}},
+{text:"困っている人を直接サポート",scores:{care:3,call:2,mobile:2,sales:1,it:0,office:0,construction:0,factory:0}}
+]},
+{text:"仕事で壁にぶつかったとき、どうする？",options:[
+{text:"人に相談して突破する",scores:{mobile:3,care:2,call:2,sales:1,it:0,office:0,construction:0,factory:0}},
+{text:"自分で調べて解決したい",scores:{it:3,office:2,construction:1,factory:1,sales:0,mobile:0,call:0,care:0}},
+{text:"根性で乗り越える",scores:{sales:3,construction:3,factory:2,care:1,it:0,office:0,mobile:0,call:0}},
+{text:"マニュアルや手順に沿って対処",scores:{call:3,office:2,factory:2,mobile:1,it:0,sales:0,construction:0,care:0}}
+]},
+{text:"働く環境、どれが好み？",options:[
+{text:"毎日違う場所で動き回りたい",scores:{construction:3,sales:2,care:1,factory:0,it:0,office:0,mobile:0,call:0}},
+{text:"きれいなオフィスで働きたい",scores:{office:3,it:2,call:2,sales:1,mobile:0,construction:0,factory:0,care:0}},
+{text:"お店や店舗で接客したい",scores:{mobile:3,care:1,call:0,sales:1,it:0,office:0,construction:0,factory:0}},
+{text:"黙々と作業に集中したい",scores:{factory:3,it:2,office:1,construction:1,sales:0,mobile:0,call:0,care:0}}
+]},
+{text:"チームワークと個人プレー、どっちが好き？",options:[
+{text:"チームで成果を出すのが好き",scores:{construction:3,care:2,factory:2,mobile:1,sales:0,it:0,office:0,call:0}},
+{text:"個人で数字を追いたい",scores:{sales:3,it:1,mobile:1,call:0,office:0,construction:0,factory:0,care:0}},
+{text:"チームにいるけど自分の仕事に集中",scores:{office:3,call:2,factory:2,it:2,sales:0,mobile:0,construction:0,care:0}},
+{text:"誰かを支える役割が好き",scores:{care:3,call:2,office:1,mobile:1,it:0,sales:0,construction:0,factory:0}}
+]},
+{text:"体力には自信がある？",options:[
+{text:"かなりある！体を動かすのが好き",scores:{construction:3,factory:2,care:1,sales:1,it:0,office:0,mobile:0,call:0}},
+{text:"普通くらい",scores:{sales:2,mobile:2,care:2,call:1,construction:1,factory:1,it:0,office:0}},
+{text:"デスクワークのほうがいい",scores:{office:3,it:3,call:2,mobile:0,sales:0,construction:0,factory:0,care:0}},
+{text:"体力より気配りが得意",scores:{care:3,call:2,mobile:2,office:1,it:0,sales:0,construction:0,factory:0}}
+]},
+{text:"5年後、どうなっていたい？",options:[
+{text:"チームをまとめるリーダーに",scores:{sales:3,construction:2,care:1,mobile:1,it:0,office:0,call:0,factory:0}},
+{text:"専門スキルで市場価値を上げたい",scores:{it:3,construction:3,office:1,factory:1,sales:0,mobile:0,call:0,care:0}},
+{text:"安定した収入で家庭を持ちたい",scores:{factory:2,office:2,call:2,mobile:2,care:2,sales:0,it:0,construction:0}},
+{text:"人の役に立つ仕事を続けたい",scores:{care:3,call:2,mobile:1,sales:1,it:0,office:0,construction:0,factory:0}}
+]}
+];
+
+const jobTypes={
+sales:{name:"営業職",subtitle:"コミュニケーション力を武器に稼ぐ！",color:"var(--coral)",
+desc:"あなたは人と関わることが得意で、目標に向かって行動できるタイプ。営業職では、その行動力とコミュニケーション力が最大の武器になります。未経験でも成果が出しやすく、頑張りが収入に直結。20代で年収500万円以上も目指せます。"},
+it:{name:"ITエンジニア",subtitle:"手に職つけて将来安定！",color:"var(--blue)",
+desc:"あなたはコツコツ学ぶことが得意で、論理的に考えるタイプ。ITエンジニアはこれからも需要が伸び続ける成長市場。未経験からインフラエンジニアとしてスタートでき、3年で年収400万円以上も可能。将来はリモートワークも実現できます。"},
+construction:{name:"施工管理",subtitle:"高年収×国家資格で市場価値UP！",color:"var(--purple)",
+desc:"あなたは体力があり、責任感が強いタイプ。施工管理は建物を完成させるプロジェクトの管理役で、現場作業ではなくマネジメントが仕事。2〜3年で年収500万円が狙え、国家資格で市場価値がさらに上がります。"},
+mobile:{name:"携帯販売",subtitle:"正社員デビューに最適！",color:"var(--amber)",
+desc:"あなたは人と接することが好きで、わかりやすく説明できるタイプ。携帯販売は未経験から最も入社しやすい職種で、正社員デビューに最適。研修が充実しており、接客スキルはどの業界でも通用する武器になります。"},
+office:{name:"事務職",subtitle:"安定×ワークライフバランス！",color:"var(--green)",
+desc:"あなたはコツコツ正確に仕事をこなすのが得意なタイプ。事務職はデスクワーク中心で、決まった時間で働けるのが魅力。ExcelやWordのスキルを身につければ、どの業界でも活躍できます。ワークライフバランスを重視する方にぴったりです。"},
+call:{name:"コールセンター",subtitle:"未経験OK×オフィスワーク！",color:"var(--pink)",
+desc:"あなたは聞き上手で、丁寧な対応が得意なタイプ。コールセンターはマニュアルが整っているので未経験でも安心。オフィスワークで体力的な負担も少なく、コミュニケーション力と事務処理能力が同時に身につきます。"},
+factory:{name:"製造・工場",subtitle:"黙々と集中して稼ぐ！",color:"var(--indigo)",
+desc:"あなたは集中力が高く、黙々と作業に取り組むのが得意なタイプ。製造・工場は決まった手順で進められるので未経験でもすぐに活躍でき、人間関係のストレスも少なめ。手に職をつければ安定した収入が得られます。"},
+care:{name:"介護・福祉",subtitle:"人の役に立つやりがい×安定！",color:"var(--red)",
+desc:"あなたは思いやりがあり、人をサポートすることに喜びを感じるタイプ。介護・福祉は社会的需要が高く、未経験でも歓迎される職種。資格取得支援がある企業も多く、経験を積めばキャリアアップも可能。「ありがとう」が直接届く仕事です。"}
+};
+
+let currentQ=0,answers=[];
+
+function startQuiz(){
+document.getElementById('startScreen').classList.add('hidden');
+document.getElementById('quizSection').classList.remove('hidden');
+showQuestion(0);
+}
+
+function showQuestion(idx){
+currentQ=idx;
+const q=questions[idx];
+document.getElementById('questionCard').className='card fade-in';
+document.getElementById('qNum').textContent=`Q${idx+1}`;
+document.getElementById('qText').textContent=q.text;
+document.getElementById('progressFill').style.width=`${(idx/questions.length)*100}%`;
+document.getElementById('progressLabel').textContent=`Q${idx+1} / ${questions.length}`;
+document.getElementById('progressPct').textContent=`${Math.round((idx/questions.length)*100)}%`;
+document.getElementById('btnBack').style.visibility=idx===0?'hidden':'visible';
+document.getElementById('btnNext').textContent=idx===questions.length-1?'結果を見る':'次へ';
+const wrap=document.getElementById('optionsWrap');
+wrap.innerHTML='';
+const markers=['A','B','C','D'];
+q.options.forEach((opt,i)=>{
+const div=document.createElement('div');
+div.className='option'+(answers[idx]===i?' selected':'');
+div.innerHTML=`<div class="option-marker">${markers[i]}</div><div class="option-text">${opt.text}</div>`;
+div.onclick=()=>selectOption(i);
+wrap.appendChild(div);
+});
+document.getElementById('btnNext').disabled=answers[idx]===undefined;
+}
+
+function selectOption(i){
+answers[currentQ]=i;
+document.querySelectorAll('.option').forEach((el,j)=>{el.className='option'+(j===i?' selected':'')});
+document.getElementById('btnNext').disabled=false;
+}
+
+function goNext(){
+if(answers[currentQ]===undefined)return;
+if(currentQ<questions.length-1)showQuestion(currentQ+1);
+else showResult();
+}
+
+function goBack(){if(currentQ>0)showQuestion(currentQ-1)}
+
+function showResult(){
+const totals={sales:0,it:0,construction:0,mobile:0,office:0,call:0,factory:0,care:0};
+answers.forEach((ansIdx,qIdx)=>{
+const scores=questions[qIdx].options[ansIdx].scores;
+for(const k in scores)totals[k]+=scores[k];
+});
+const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+const winner=sorted[0][0];
+const maxScore=sorted[0][1];
+const job=jobTypes[winner];
+
+document.getElementById('quizSection').classList.add('hidden');
+document.getElementById('resultSection').style.display='block';
+document.getElementById('resultType').textContent=job.name;
+document.getElementById('resultType').style.color=job.color;
+document.getElementById('resultSubtitle').textContent=job.subtitle;
+document.getElementById('resultDesc').textContent=job.desc;
+document.getElementById('resultDesc').style.borderLeftColor=job.color;
+
+const barsWrap=document.getElementById('scoreBars');
+barsWrap.innerHTML='';
+const top5=sorted.slice(0,5);
+top5.forEach(([key,score],i)=>{
+const pct=Math.round((score/maxScore)*100);
+const jt=jobTypes[key];
+const row=document.createElement('div');
+row.className='score-row';
+row.innerHTML=`<div class="score-label">${jt.name}</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:0%;background:${jt.color}"></div></div><div class="score-pct">${pct}%</div>`;
+barsWrap.appendChild(row);
+setTimeout(()=>{row.querySelector('.score-bar-fill').style.width=pct+'%'},100+i*150);
+});
+
+window.scrollTo({top:0,behavior:'smooth'});
+
+const top3Names=sorted.slice(0,3).map(([k])=>jobTypes[k].name).join('・');
+const lineMsg=`【職種診断の結果】\n\n診断結果：${job.name}\n（${job.subtitle}）\n\n適性TOP3：${top3Names}\n\nこの結果をもとに相談したいです！`;
+const lineUrl=`https://line.me/R/oaMessage/${encodeURIComponent('@未経験ナビ')}/?${encodeURIComponent(lineMsg)}`;
+const ctaBtn=document.getElementById('ctaLineBtn');
+ctaBtn.href=`https://lin.ee/mFj9ZwL`;
+ctaBtn.onclick=function(e){
+e.preventDefault();
+const text=`【職種診断の結果】%0A%0A診断結果：${job.name}%0A（${job.subtitle}）%0A%0A適性TOP3：${top3Names}%0A%0Aこの結果をもとに相談したいです！`;
+const ua=navigator.userAgent.toLowerCase();
+if(ua.includes('iphone')||ua.includes('android')){
+window.location.href=`https://line.me/R/oaMessage/@478tkwyk/?${text}`;
+}else{
+window.open(`https://lin.ee/mFj9ZwL`,'_blank');
+}
+};
+}
+</script>
+</body>
+</html>
