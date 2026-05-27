@@ -90,11 +90,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray-50);color:var(-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     </div>
     <h2>未経験からの正社員転職</h2>
-    <p>あなたの性格や希望に合った<br>ピッタリの職種を診断します</p>
+    <p>あなたの性格や希望に合った<br>始めやすい職種を診断します</p>
     <div class="start-features">
       <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>全12問・約2分で完了</div>
-      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>8つの職種タイプから診断</div>
-      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>結果に合った求人をご紹介</div>
+      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>未経験から始めやすい職種タイプを診断</div>
+      <div class="start-feature"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>結果に合った求人を一緒に確認</div>
     </div>
     <button class="btn-start" onclick="startQuiz()">診断をはじめる</button>
   </div>
@@ -124,9 +124,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray-50);color:var(-
         <div id="scoreBars"></div>
       </div>
       <div class="cta-section">
-        <h3>この職種の求人、ご紹介できます</h3>
-        <p>キャリアアドバイザーがあなたに合った<br>求人を無料でご紹介します</p>
-        <a href="https://lin.ee/mFj9ZwL" class="btn-cta" id="ctaLineBtn">LINEで診断結果を送る</a>
+        <h3>診断結果をもとに、合う求人を一緒に確認できます</h3>
+        <p>まだ希望がはっきりしていなくても大丈夫です。<br>働き方・給与・不安な点も面談で整理しましょう。</p>
+        <a href="https://lin.ee/mFj9ZwL" class="btn-cta" id="ctaLineBtn">LINEで診断結果を送って相談する</a>
       </div>
     </div>
   </div>
@@ -134,95 +134,95 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray-50);color:var(-
 </div>
 <script>
 const questions=[
-{text:"休日はどう過ごすことが多い？",options:[
-{text:"友達と出かける・人と会う",scores:{sales:3,mobile:2,call:1,care:1,office:0,it:0,construction:0,factory:0}},
-{text:"家でゲームや動画を楽しむ",scores:{it:3,office:2,call:1,factory:1,sales:0,mobile:0,construction:0,care:0}},
-{text:"体を動かす・スポーツ",scores:{construction:3,factory:2,care:1,sales:1,it:0,office:0,mobile:0,call:0}},
-{text:"買い物やカフェでゆっくり",scores:{mobile:3,office:2,call:1,care:1,sales:0,it:0,construction:0,factory:0}}
+{text:"休日はどんな過ごし方が自分らしい？",options:[
+{text:"友人や家族と出かけたり、お店を見て回るのが好き",scores:{mobile:7,sales:5,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"外に出て体を動かすと気分転換になる",scores:{construction:8,factory:2,sales:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"スマホやPCで調べもの、動画、ゲームを楽しむ",scores:{it:8,factory:1,mobile:1,sales:0,construction:0,office:0,call:0,care:0}},
+{text:"ひとつの作業に集中して、形になるものを進めたい",scores:{factory:8,it:2,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"仕事で一番大事にしたいのは？",options:[
-{text:"頑張った分だけ稼ぎたい",scores:{sales:3,construction:2,it:1,mobile:0,office:0,call:0,factory:0,care:0}},
-{text:"手に職をつけて安定したい",scores:{it:3,construction:3,factory:2,office:1,sales:0,mobile:0,call:0,care:0}},
-{text:"人に感謝される仕事がいい",scores:{care:3,mobile:2,call:2,sales:1,it:0,office:0,construction:0,factory:0}},
-{text:"決まった時間で働きたい",scores:{office:3,factory:3,call:2,mobile:1,sales:0,it:0,construction:0,care:0}}
+{text:"仕事で大事にしたいことに近いのは？",options:[
+{text:"人と関わりながら、相手に喜ばれる仕事がしたい",scores:{mobile:8,sales:6,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"責任ある仕事を通じて、少しずつ成長したい",scores:{construction:8,sales:2,factory:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"専門スキルを身につけて、将来の選択肢を広げたい",scores:{it:8,construction:1,factory:1,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"決まった流れの中で、安定してコツコツ働きたい",scores:{factory:8,it:1,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"初対面の人と話すのは？",options:[
-{text:"得意！どんどん話せる",scores:{sales:3,mobile:3,care:1,call:1,it:0,office:0,construction:0,factory:0}},
-{text:"慣れれば話せる",scores:{call:2,mobile:2,care:2,construction:1,sales:1,it:0,office:0,factory:0}},
-{text:"聞き役になることが多い",scores:{care:2,call:2,office:2,construction:1,it:1,sales:0,mobile:0,factory:0}},
-{text:"正直あまり得意じゃない",scores:{it:3,factory:3,office:2,construction:1,sales:0,mobile:0,call:0,care:0}}
+{text:"初対面の人と話すとき、どれが近い？",options:[
+{text:"相手に合わせて話すのはわりと得意",scores:{mobile:8,sales:7,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"最初は緊張するけど、慣れれば連携できる",scores:{construction:7,sales:2,mobile:1,factory:1,it:0,office:0,call:0,care:0}},
+{text:"必要なことを整理して、落ち着いて伝えるタイプ",scores:{it:7,factory:2,construction:1,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"話すよりも、目の前の作業に集中する方が得意",scores:{factory:8,it:2,construction:0,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"学生時代、どんなタイプだった？",options:[
-{text:"部活やイベントに全力投球",scores:{construction:3,sales:2,care:1,factory:1,it:0,office:0,mobile:0,call:0}},
-{text:"リーダーや仕切り役が多かった",scores:{sales:3,construction:2,mobile:1,care:1,it:0,office:0,call:0,factory:0}},
-{text:"コツコツ勉強・研究タイプ",scores:{it:3,office:3,factory:1,call:1,sales:0,mobile:0,construction:0,care:0}},
-{text:"友達が広く浅く多かった",scores:{mobile:3,call:2,care:1,sales:1,it:0,office:0,construction:0,factory:0}}
+{text:"これまで褒められたことがあるのは？",options:[
+{text:"話しやすい、説明がわかりやすいと言われる",scores:{mobile:8,sales:6,it:1,construction:0,factory:0,office:0,call:0,care:0}},
+{text:"責任感がある、最後までやり切ると言われる",scores:{construction:8,sales:2,factory:2,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"調べるのが得意、覚えるのが早いと言われる",scores:{it:8,factory:1,construction:1,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"丁寧、ミスが少ない、集中力があると言われる",scores:{factory:8,it:2,construction:0,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"パソコンやスマホの操作は？",options:[
-{text:"大好き！新しいアプリもすぐ試す",scores:{it:3,mobile:2,office:1,call:1,sales:0,construction:0,factory:0,care:0}},
-{text:"Excel・Wordなら使える",scores:{office:3,call:2,it:1,sales:1,mobile:0,construction:0,factory:0,care:0}},
-{text:"SNSやLINEくらいなら",scores:{mobile:2,call:2,care:2,sales:1,it:0,office:0,construction:0,factory:0}},
-{text:"あまり得意じゃない",scores:{construction:3,factory:3,care:2,sales:1,it:0,office:0,mobile:0,call:0}}
+{text:"スマホやPCとの向き合い方は？",options:[
+{text:"スマホの操作や料金プランを人に説明するのは苦ではない",scores:{mobile:8,sales:5,it:1,construction:0,factory:0,office:0,call:0,care:0}},
+{text:"最低限使えればOK。PCより動きのある仕事が合いそう",scores:{construction:8,factory:2,sales:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"新しいアプリや設定を試すのはわりと好き",scores:{it:8,mobile:1,factory:1,sales:0,construction:0,office:0,call:0,care:0}},
+{text:"機械の操作や決まった手順を覚えるのは得意",scores:{factory:8,it:2,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"年収はどれくらい目指したい？",options:[
-{text:"20代で500万以上を目指す",scores:{sales:3,construction:3,it:2,factory:0,mobile:0,office:0,call:0,care:0}},
-{text:"400万あれば十分",scores:{it:2,construction:2,sales:1,office:1,factory:1,call:0,mobile:0,care:0}},
-{text:"まずは300万から安定して",scores:{mobile:2,call:2,office:2,care:2,factory:2,sales:0,it:0,construction:0}},
-{text:"お金より働きやすさ重視",scores:{office:3,care:2,call:2,factory:1,mobile:1,sales:0,it:0,construction:0}}
+{text:"収入や働き方で近い考えは？",options:[
+{text:"接客や提案を通じて、できることを増やしていきたい",scores:{sales:8,mobile:7,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"経験を積んで、将来的に収入アップも目指したい",scores:{construction:8,sales:2,it:1,factory:1,mobile:0,office:0,call:0,care:0}},
+{text:"スキルを身につけて、長く働ける土台を作りたい",scores:{it:8,construction:1,factory:1,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"まずは安定して働ける環境を大事にしたい",scores:{factory:8,it:1,mobile:1,construction:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"次のうち、やってみたいのは？",options:[
-{text:"お客様に最適な提案をする",scores:{sales:3,mobile:2,care:1,call:1,it:0,office:0,construction:0,factory:0}},
-{text:"建物やインフラを作り上げる",scores:{construction:3,factory:2,it:0,sales:0,mobile:0,office:0,call:0,care:0}},
-{text:"データ入力や書類作成を正確に",scores:{office:3,call:2,it:1,factory:1,sales:0,mobile:0,construction:0,care:0}},
-{text:"困っている人を直接サポート",scores:{care:3,call:2,mobile:2,sales:1,it:0,office:0,construction:0,factory:0}}
+{text:"次のうち、少しでもやってみたいのは？",options:[
+{text:"お客様に合う商品やプランを一緒に選ぶ",scores:{mobile:8,sales:7,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"建物や設備が完成するまでの流れを支える",scores:{construction:9,factory:1,sales:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"PCやネットワークに関わる仕事に挑戦する",scores:{it:9,factory:1,construction:0,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"製品の組立、検査、チェック作業を丁寧に進める",scores:{factory:9,it:1,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"仕事で壁にぶつかったとき、どうする？",options:[
-{text:"人に相談して突破する",scores:{mobile:3,care:2,call:2,sales:1,it:0,office:0,construction:0,factory:0}},
-{text:"自分で調べて解決したい",scores:{it:3,office:2,construction:1,factory:1,sales:0,mobile:0,call:0,care:0}},
-{text:"根性で乗り越える",scores:{sales:3,construction:3,factory:2,care:1,it:0,office:0,mobile:0,call:0}},
-{text:"マニュアルや手順に沿って対処",scores:{call:3,office:2,factory:2,mobile:1,it:0,sales:0,construction:0,care:0}}
+{text:"困ったことが起きたときの動き方は？",options:[
+{text:"周りに相談しながら、相手に合わせて解決したい",scores:{mobile:8,sales:5,construction:1,it:0,factory:0,office:0,call:0,care:0}},
+{text:"まず状況を確認して、必要な人と連携する",scores:{construction:8,sales:2,factory:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"自分で調べて、原因や手順を整理したい",scores:{it:8,factory:2,construction:0,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"マニュアルや決まった手順に沿って対応したい",scores:{factory:8,it:2,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"働く環境、どれが好み？",options:[
-{text:"毎日違う場所で動き回りたい",scores:{construction:3,sales:2,care:1,factory:0,it:0,office:0,mobile:0,call:0}},
-{text:"きれいなオフィスで働きたい",scores:{office:3,it:2,call:2,sales:1,mobile:0,construction:0,factory:0,care:0}},
-{text:"お店や店舗で接客したい",scores:{mobile:3,care:1,call:0,sales:1,it:0,office:0,construction:0,factory:0}},
-{text:"黙々と作業に集中したい",scores:{factory:3,it:2,office:1,construction:1,sales:0,mobile:0,call:0,care:0}}
+{text:"働く場所としてイメージしやすいのは？",options:[
+{text:"店舗や売り場など、人と直接話せる場所",scores:{mobile:9,sales:6,construction:0,it:0,factory:0,office:0,call:0,care:0}},
+{text:"現場や建物づくりに関わる、動きのある場所",scores:{construction:9,sales:1,factory:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"オフィスや在宅など、PCに向かって集中できる場所",scores:{it:9,factory:0,mobile:0,sales:0,construction:0,office:0,call:0,care:0}},
+{text:"工場や作業場など、手順に沿って集中できる場所",scores:{factory:9,it:1,construction:0,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"チームワークと個人プレー、どっちが好き？",options:[
-{text:"チームで成果を出すのが好き",scores:{construction:3,care:2,factory:2,mobile:1,sales:0,it:0,office:0,call:0}},
-{text:"個人で数字を追いたい",scores:{sales:3,it:1,mobile:1,call:0,office:0,construction:0,factory:0,care:0}},
-{text:"チームにいるけど自分の仕事に集中",scores:{office:3,call:2,factory:2,it:2,sales:0,mobile:0,construction:0,care:0}},
-{text:"誰かを支える役割が好き",scores:{care:3,call:2,office:1,mobile:1,it:0,sales:0,construction:0,factory:0}}
+{text:"チームでの立ち位置はどれが近い？",options:[
+{text:"場の雰囲気を明るくして、周りと協力したい",scores:{mobile:8,sales:6,construction:1,it:0,factory:0,office:0,call:0,care:0}},
+{text:"全体を見ながら、進み具合を確認する役が合う",scores:{construction:8,sales:2,factory:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"自分のスキルを磨いて、専門性で貢献したい",scores:{it:8,factory:1,construction:0,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"任された役割を、正確にきちんと進めたい",scores:{factory:8,it:1,construction:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"体力には自信がある？",options:[
-{text:"かなりある！体を動かすのが好き",scores:{construction:3,factory:2,care:1,sales:1,it:0,office:0,mobile:0,call:0}},
-{text:"普通くらい",scores:{sales:2,mobile:2,care:2,call:1,construction:1,factory:1,it:0,office:0}},
-{text:"デスクワークのほうがいい",scores:{office:3,it:3,call:2,mobile:0,sales:0,construction:0,factory:0,care:0}},
-{text:"体力より気配りが得意",scores:{care:3,call:2,mobile:2,office:1,it:0,sales:0,construction:0,factory:0}}
+{text:"体力面で近いものは？",options:[
+{text:"立ち仕事や接客で動くのは比較的平気",scores:{mobile:8,sales:6,construction:1,factory:1,it:0,office:0,call:0,care:0}},
+{text:"体を動かす仕事にも前向きに取り組める",scores:{construction:9,factory:2,sales:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"長く集中するなら、デスクワーク寄りが合いそう",scores:{it:8,factory:1,mobile:0,sales:0,construction:0,office:0,call:0,care:0}},
+{text:"同じ作業をコツコツ続けるのは苦にならない",scores:{factory:9,it:1,construction:0,mobile:0,sales:0,office:0,call:0,care:0}}
 ]},
-{text:"5年後、どうなっていたい？",options:[
-{text:"チームをまとめるリーダーに",scores:{sales:3,construction:2,care:1,mobile:1,it:0,office:0,call:0,factory:0}},
-{text:"専門スキルで市場価値を上げたい",scores:{it:3,construction:3,office:1,factory:1,sales:0,mobile:0,call:0,care:0}},
-{text:"安定した収入で家庭を持ちたい",scores:{factory:2,office:2,call:2,mobile:2,care:2,sales:0,it:0,construction:0}},
-{text:"人の役に立つ仕事を続けたい",scores:{care:3,call:2,mobile:1,sales:1,it:0,office:0,construction:0,factory:0}}
+{text:"5年後、どんな働き方に近づきたい？",options:[
+{text:"接客や提案の経験を活かして、店舗やチームを任されたい",scores:{mobile:8,sales:7,construction:1,it:0,factory:0,office:0,call:0,care:0}},
+{text:"現場を支える管理役として、頼られる存在になりたい",scores:{construction:9,sales:2,factory:1,mobile:0,it:0,office:0,call:0,care:0}},
+{text:"ITスキルを積み上げて、選べる仕事を増やしたい",scores:{it:9,factory:0,construction:0,mobile:0,sales:0,office:0,call:0,care:0}},
+{text:"安定した環境で経験を積み、作業のリーダーも目指したい",scores:{factory:9,construction:1,it:1,mobile:0,sales:0,office:0,call:0,care:0}}
 ]}
 ];
 
 const jobTypes={
-sales:{name:"営業職",subtitle:"コミュニケーション力を武器に稼ぐ！",color:"var(--coral)",
-desc:"あなたは人と関わることが得意で、目標に向かって行動できるタイプ。営業職では、その行動力とコミュニケーション力が最大の武器になります。未経験でも成果が出しやすく、頑張りが収入に直結。20代で年収500万円以上も目指せます。"},
-it:{name:"ITエンジニア",subtitle:"手に職つけて将来安定！",color:"var(--blue)",
-desc:"あなたはコツコツ学ぶことが得意で、論理的に考えるタイプ。ITエンジニアはこれからも需要が伸び続ける成長市場。未経験からインフラエンジニアとしてスタートでき、3年で年収400万円以上も可能。将来はリモートワークも実現できます。"},
-construction:{name:"施工管理",subtitle:"高年収×国家資格で市場価値UP！",color:"var(--purple)",
-desc:"あなたは体力があり、責任感が強いタイプ。施工管理は建物を完成させるプロジェクトの管理役で、現場作業ではなくマネジメントが仕事。2〜3年で年収500万円が狙え、国家資格で市場価値がさらに上がります。"},
-mobile:{name:"携帯販売",subtitle:"正社員デビューに最適！",color:"var(--amber)",
-desc:"あなたは人と接することが好きで、わかりやすく説明できるタイプ。携帯販売は未経験から最も入社しやすい職種で、正社員デビューに最適。研修が充実しており、接客スキルはどの業界でも通用する武器になります。"},
+sales:{name:"販売サービス・提案職",subtitle:"人と話す力を活かして、未経験から始めやすいタイプ",color:"var(--coral)",
+desc:"あなたは人と関わりながら、相手に合うものを提案する力が活かせるタイプです。最初から難しい営業を任されるというより、研修や先輩のフォローがある環境から始められる求人もあります。面談では、接客が好きか、数字を追う働き方が合うか、不安な点も含めて一緒に確認していきましょう。"},
+it:{name:"ITエンジニア",subtitle:"コツコツ学びながら、将来の選択肢を広げるタイプ",color:"var(--blue)",
+desc:"あなたは新しいことを調べたり、手順を覚えて少しずつできることを増やしていく働き方と相性が良いタイプです。未経験の場合は、いきなり開発だけでなく、運用・監視・ヘルプデスクなど基礎から始められる求人もあります。面談では、PCスキルや学習ペースに合うスタートラインを一緒に整理できます。"},
+construction:{name:"施工管理",subtitle:"チームを支えながら、大きな仕事に関わるタイプ",color:"var(--purple)",
+desc:"あなたは責任感や周囲との連携を活かして、物事を前に進める仕事と相性が良いタイプです。施工管理は、建物づくりの現場でスケジュール確認や安全管理、職人さんとの調整を行う仕事です。体力面や休日、働き方に不安がある方も多いので、面談では仕事内容を具体的に確認しながら、合う求人を一緒に見ていきましょう。"},
+mobile:{name:"携帯販売・販売サービス",subtitle:"接客経験がなくても始めやすい、安心の正社員デビュータイプ",color:"var(--amber)",
+desc:"あなたは人と話すことや、相手に合わせてわかりやすく説明することに向いているタイプです。携帯販売・販売サービスは、研修やマニュアルが整っている求人も多く、未経験から正社員を目指しやすい職種のひとつです。面談では、接客への不安や希望の働き方も聞きながら、無理なく始められる求人を一緒に探せます。"},
 office:{name:"事務職",subtitle:"安定×ワークライフバランス！",color:"var(--green)",
 desc:"あなたはコツコツ正確に仕事をこなすのが得意なタイプ。事務職はデスクワーク中心で、決まった時間で働けるのが魅力。ExcelやWordのスキルを身につければ、どの業界でも活躍できます。ワークライフバランスを重視する方にぴったりです。"},
 call:{name:"コールセンター",subtitle:"未経験OK×オフィスワーク！",color:"var(--pink)",
 desc:"あなたは聞き上手で、丁寧な対応が得意なタイプ。コールセンターはマニュアルが整っているので未経験でも安心。オフィスワークで体力的な負担も少なく、コミュニケーション力と事務処理能力が同時に身につきます。"},
-factory:{name:"製造・工場",subtitle:"黙々と集中して稼ぐ！",color:"var(--indigo)",
-desc:"あなたは集中力が高く、黙々と作業に取り組むのが得意なタイプ。製造・工場は決まった手順で進められるので未経験でもすぐに活躍でき、人間関係のストレスも少なめ。手に職をつければ安定した収入が得られます。"},
+factory:{name:"製造・工場",subtitle:"決まった手順でコツコツ進める安定タイプ",color:"var(--indigo)",
+desc:"あなたは集中して作業を進めたり、決まった手順を丁寧に守る働き方と相性が良いタイプです。製造・工場の仕事は、検査・組立・機械操作など未経験から始めやすい業務もあります。人間関係や仕事内容に不安がある場合も、面談で職場環境や勤務時間を確認しながら、続けやすい求人を一緒に考えられます。"},
 care:{name:"介護・福祉",subtitle:"人の役に立つやりがい×安定！",color:"var(--red)",
 desc:"あなたは思いやりがあり、人をサポートすることに喜びを感じるタイプ。介護・福祉は社会的需要が高く、未経験でも歓迎される職種。資格取得支援がある企業も多く、経験を積めばキャリアアップも可能。「ありがとう」が直接届く仕事です。"}
 };
@@ -308,13 +308,13 @@ setTimeout(()=>{row.querySelector('.score-bar-fill').style.width=pct+'%'},100+i*
 window.scrollTo({top:0,behavior:'smooth'});
 
 const top3Names=sorted.slice(0,3).map(([k])=>jobTypes[k].name).join('・');
-const lineMsg=`【職種診断の結果】\n\n診断結果：${job.name}\n（${job.subtitle}）\n\n適性TOP3：${top3Names}\n\nこの結果をもとに相談したいです！`;
+const lineMsg=`【職種診断の結果】\n\n診断結果：${job.name}\n（${job.subtitle}）\n\n適性TOP3：${top3Names}\n\nこの結果をもとに、希望条件や不安な点も相談したいです。`;
 const lineUrl=`https://line.me/R/oaMessage/${encodeURIComponent('@未経験ナビ')}/?${encodeURIComponent(lineMsg)}`;
 const ctaBtn=document.getElementById('ctaLineBtn');
 ctaBtn.href=`https://lin.ee/mFj9ZwL`;
 ctaBtn.onclick=function(e){
 e.preventDefault();
-const text=`【職種診断の結果】%0A%0A診断結果：${job.name}%0A（${job.subtitle}）%0A%0A適性TOP3：${top3Names}%0A%0Aこの結果をもとに相談したいです！`;
+const text=`【職種診断の結果】%0A%0A診断結果：${job.name}%0A（${job.subtitle}）%0A%0A適性TOP3：${top3Names}%0A%0Aこの結果をもとに、希望条件や不安な点も相談したいです。`;
 const ua=navigator.userAgent.toLowerCase();
 if(ua.includes('iphone')||ua.includes('android')){
 window.location.href=`https://line.me/R/oaMessage/@478tkwyk/?${text}`;
