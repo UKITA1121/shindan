@@ -307,14 +307,12 @@ setTimeout(()=>{row.querySelector('.score-bar-fill').style.width=pct+'%'},100+i*
 
 window.scrollTo({top:0,behavior:'smooth'});
 
-const top3Names=sorted.slice(0,3).map(([k])=>jobTypes[k].name).join('・');
-const lineMsg=`【職種診断の結果】\n\n診断結果：${job.name}\n（${job.subtitle}）\n\n適性TOP3：${top3Names}\n\nこの結果をもとに、希望条件や不安な点も相談したいです。`;
-const lineUrl=`https://line.me/R/oaMessage/${encodeURIComponent('@未経験ナビ')}/?${encodeURIComponent(lineMsg)}`;
+const lineMsg=`【職種診断】${job.name}のおすすめ求人を見たいです`;
 const ctaBtn=document.getElementById('ctaLineBtn');
 ctaBtn.href=`https://lin.ee/mFj9ZwL`;
 ctaBtn.onclick=function(e){
 e.preventDefault();
-const text=`【職種診断の結果】%0A%0A診断結果：${job.name}%0A（${job.subtitle}）%0A%0A適性TOP3：${top3Names}%0A%0Aこの結果をもとに、希望条件や不安な点も相談したいです。`;
+const text=encodeURIComponent(lineMsg);
 const ua=navigator.userAgent.toLowerCase();
 if(ua.includes('iphone')||ua.includes('android')){
 window.location.href=`https://line.me/R/oaMessage/@478tkwyk/?${text}`;
