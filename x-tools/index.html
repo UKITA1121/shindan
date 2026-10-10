@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X運用ツール(個人用)</title>
+<style>
+:root{--bg:#f6f7f8;--fg:#1d2327;--mut:#6b7780;--card:#fff;--line:#dde2e6;--acc:#1d9bf0;--bar:#7cc4f5;--ok:#1a8f5a;--ng:#d4382f}
+@media(prefers-color-scheme:dark){:root{--bg:#15181b;--fg:#e6e9eb;--mut:#8b98a1;--card:#1e2327;--line:#2f3a42;--bar:#2c6e9c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:8px 0 4px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:12px}
+nav{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px 14px;border-radius:20px;cursor:pointer;font-size:14px}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 8px}
+textarea,input[type=text],select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:10px;font:inherit}
+textarea{min-height:130px;resize:vertical}
+.btn{border:0;background:var(--acc);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+.btn.sec{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.sm{padding:3px 9px;font-size:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.cnt{font-variant-numeric:tabular-nums;font-size:13px;color:var(--mut)}
+.cnt.over{color:var(--ng);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.kpi{background:var(--bg);border-radius:8px;padding:8px 10px}
+.kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--mut)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:110px;margin-top:6px}
+.bars div{flex:1;background:var(--bar);border-radius:2px 2px 0 0;min-height:1px;position:relative}
+.bars div.top{background:var(--acc)}
+.lab{display:flex;gap:2px;font-size:10px;color:var(--mut)}.lab span{flex:1;text-align:center}
+.item{border-top:1px solid var(--line);padding:10px 0}
+.item:first-child{border-top:0}
+.item p{margin:0 0 4px;white-space:pre-wrap;word-break:break-word}
+.meta{font-size:12px;color:var(--mut)}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 8px;font-size:12px;margin-right:4px;cursor:pointer}
+.part{background:var(--bg);border-radius:8px;padding:8px;margin-top:8px;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>X運用ツール</h1>
+<div class="sub">API不使用・無料・サーバー不要。データはこの端末のブラウザ内だけに保存されます。</div>
+<nav id="nav"></nav>
+
+<!-- 下書き・ネタ帳 -->
+<section id="s-draft" class="on">
+  <div class="card">
+    <h2>下書き・ネタ帳</h2>
+    <textarea id="dtext" placeholder="思いついたことをここに書く"></textarea>
+    <div class="row">
+      <input type="text" id="dtags" placeholder="タグ(カンマ区切り)" style="flex:1;min-width:160px">
+      <span class="cnt" id="dcnt"></span>
+    </div>
+    <div class="row">
+      <button class="btn" id="dsave">保存</button>
+      <button class="btn sec" id="dcopy">コピー</button>
+      <button class="btn sec" id="dsplit">スレッドに分割</button>
+      <button class="btn sec" id="dclear">クリア</button>
+    </div>
+    <div id="dparts"></div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin:0 0 6px">
+      <input type="text" id="dq" placeholder="検索" style="flex:1;min-width:140px">
+      <select id="dstat" style="width:auto"><option value="">すべて</option><option value="idea">ネタ</option><option value="done">投稿済み</option></select>
+      <button class="btn sec sm" id="dexp">書き出し(JSON)</button>
+      <label class="btn sec sm">読み込み<input type="file" id="dimp" accept=".json" hidden></label>
+    </div>
+    <div id="dtaglist"></div>
+    <div id="dlist"></div>
+  </div>
+</section>
+
+<!-- アーカイブ分析 -->
+<section id="s-ana">
+  <div class="card">
+    <h2>投稿の振り返り(Xのデータアーカイブを分析)</h2>
+    <div class="sub">Xの「設定 → アカウント → データのアーカイブをダウンロード」で取得したzipを解凍し、<b>data/tweets.js</b> を選択してください。ファイルは端末外に送信されません。</div>
+    <input type="file" id="afile" accept=".js,.json">
+    <div id="astat" class="meta" style="margin-top:6px"></div>
+  </div>
+  <div id="aout"></div>
+</section>
+
+<!-- 文字数 -->
+<section id="s-cnt">
+  <div class="card">
+    <h2>文字数チェック(X換算)</h2>
+    <div class="sub">日本語など全角は2、半角英数は1、URLは23として280以内かを判定します。</div>
+    <textarea id="ctext"></textarea>
+    <div class="row"><span class="cnt" id="ccnt"></span></div>
+  </div>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---- タブ ---- */
+const tabs=[['draft','下書き・ネタ帳'],['ana','投稿の振り返り'],['cnt','文字数']];
+tabs.forEach(([id,name],i)=>{const b=document.createElement('button');b.textContent=name;b.dataset.id=id;if(!i)b.className='on';
+  b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==='s-'+id))};
+  $('#nav').appendChild(b)});
+
+/* ---- X換算の文字数 ---- */
+function wlen(t){
+  t=t.replace(/https?:\/\/\S+/g,'\u0001'.repeat(1));
+  let n=0;
+  for(const ch of t){
+    if(ch==='\u0001'){n+=23;continue}
+    const c=ch.codePointAt(0);
+    n+=(c<=4351||(c>=8192&&c<=8205)||(c>=8208&&c<=8223)||(c>=8242&&c<=8247))?1:2;
+  }
+  return n;
+}
+function showCnt(el,t){const n=wlen(t);el.textContent=n+' / 280'+(n>280?'(超過 '+(n-280)+')':'');el.classList.toggle('over',n>280)}
+$('#ctext').oninput=e=>showCnt($('#ccnt'),e.target.value);showCnt($('#ccnt'),'');
+
+/* ---- スレッド分割(280換算以内、改行→句点→強制の順で区切る) ---- */
+function splitThread(text,limit=270){
+  const units=text.split(/\n{2,}|(?<=[。!?!?\n])/).map(s=>s.trim()).filter(Boolean);
+  const out=[];let cur='';
+  const push=()=>{if(cur){out.push(cur);cur=''}};
+  for(const u of units){
+    if(wlen(u)>limit){push();let buf='';for(const ch of u){if(wlen(buf+ch)>limit){out.push(buf);buf=''}buf+=ch}cur=buf;continue}
+    if(wlen(cur?cur+'\n'+u:u)>limit)push();
+    cur=cur?cur+'\n'+u:u;
+  }
+  push();
+  return out.length>1?out.map((p,i)=>p+`\n(${i+1}/${out.length})`):out;
+}
+
+/* ---- 下書き ---- */
+let drafts=LS.get('x_drafts',[]),editId=null,tagFilter='';
+const save=()=>LS.set('x_drafts',drafts);
+const tagsOf=s=>s.split(/[,、\s]+/).map(x=>x.trim()).filter(Boolean);
+$('#dtext').oninput=e=>showCnt($('#dcnt'),e.target.value);showCnt($('#dcnt'),'');
+$('#dsave').onclick=()=>{
+  const text=$('#dtext').value.trim();if(!text)return;
+  const tags=tagsOf($('#dtags').value);
+  if(editId){const d=drafts.find(x=>x.id===editId);if(d){d.text=text;d.tags=tags;d.updated=Date.now()}}
+  else drafts.unshift({id:Date.now().toString(36),text,tags,status:'idea',created:Date.now(),updated:Date.now()});
+  editId=null;save();$('#dtext').value='';$('#dtags').value='';$('#dparts').innerHTML='';showCnt($('#dcnt'),'');renderDrafts();
+};
+$('#dclear').onclick=()=>{editId=null;$('#dtext').value='';$('#dtags').value='';$('#dparts').innerHTML='';showCnt($('#dcnt'),'')};
+$('#dcopy').onclick=()=>navigator.clipboard.writeText($('#dtext').value);
+$('#dsplit').onclick=()=>{
+  const parts=splitThread($('#dtext').value);
+  $('#dparts').innerHTML=parts.map((p,i)=>`<div class="part">${esc(p)}<div class="row"><span class="cnt">${wlen(p)} / 280</span><button class="btn sec sm" data-i="${i}">コピー</button></div></div>`).join('');
+  $('#dparts').querySelectorAll('button').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(parts[b.dataset.i]));
+};
+function renderDrafts(){
+  const q=$('#dq').value.toLowerCase(),st=$('#dstat').value;
+  const all=[...new Set(drafts.flatMap(d=>d.tags))];
+  $('#dtaglist').innerHTML=all.map(t=>`<span class="tag" data-t="${esc(t)}" style="${t===tagFilter?'background:var(--acc);color:#fff':''}">#${esc(t)}</span>`).join('');
+  $('#dtaglist').querySelectorAll('.tag').forEach(el=>el.onclick=()=>{tagFilter=tagFilter===el.dataset.t?'':el.dataset.t;renderDrafts()});
+  const list=drafts.filter(d=>(!q||d.text.toLowerCase().includes(q))&&(!st||d.status===st)&&(!tagFilter||d.tags.includes(tagFilter)));
+  $('#dlist').innerHTML=list.length?list.map(d=>`<div class="item"><p>${esc(d.text)}</p><div class="meta">${d.status==='done'?'✅投稿済み':'💡ネタ'} ・ ${wlen(d.text)}字 ・ ${new Date(d.updated).toLocaleDateString('ja-JP')} ${d.tags.map(t=>'#'+esc(t)).join(' ')}</div>
+  <div class="row"><button class="btn sec sm" data-a="edit" data-id="${d.id}">編集</button><button class="btn sec sm" data-a="copy" data-id="${d.id}">コピー</button><button class="btn sec sm" data-a="tgl" data-id="${d.id}">${d.status==='done'?'ネタに戻す':'投稿済みにする'}</button><button class="btn sec sm" data-a="del" data-id="${d.id}">削除</button></div></div>`).join(''):'<div class="meta">該当なし</div>';
+  $('#dlist').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const d=drafts.find(x=>x.id===b.dataset.id);if(!d)return;
+    if(b.dataset.a==='edit'){editId=d.id;$('#dtext').value=d.text;$('#dtags').value=d.tags.join(', ');showCnt($('#dcnt'),d.text);scrollTo(0,0)}
+    if(b.dataset.a==='copy')navigator.clipboard.writeText(d.text);
+    if(b.dataset.a==='tgl'){d.status=d.status==='done'?'idea':'done';save();renderDrafts()}
+    if(b.dataset.a==='del'&&confirm('削除しますか?')){drafts=drafts.filter(x=>x!==d);save();renderDrafts()}
+  });
+}
+$('#dq').oninput=renderDrafts;$('#dstat').onchange=renderDrafts;
+$('#dexp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(drafts,null,1)],{type:'application/json'}));a.download='x-drafts.json';a.click()};
+$('#dimp').onchange=async e=>{try{const arr=JSON.parse(await e.target.files[0].text());const ids=new Set(drafts.map(d=>d.id));arr.forEach(d=>{if(d&&d.id&&d.text&&!ids.has(d.id))drafts.push(d)});save();renderDrafts()}catch(err){alert('読み込めませんでした')}};
+renderDrafts();
+
+/* ---- アーカイブ分析 ---- */
+$('#afile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    let txt=await f.text();
+    txt=txt.slice(txt.indexOf('['));
+    const raw=JSON.parse(txt);
+    const posts=raw.map(r=>r.tweet||r).map(t=>{
+      const d=new Date(t.created_at),text=t.full_text||t.text||'';
+      return {id:t.id_str||t.id,d,text,likes:+t.favorite_count||0,rt:+t.retweet_count||0,
+        isRT:/^RT @/.test(text),isReply:!!t.in_reply_to_status_id_str,
+        link:/https?:\/\//.test((t.entities&&t.entities.urls&&t.entities.urls.length)?'http://':''),
+        media:!!(t.entities&&t.entities.media&&t.entities.media.length)||!!(t.extended_entities&&t.extended_entities.media)};
+    }).filter(p=>!isNaN(p.d));
+    $('#astat').textContent=`${posts.length.toLocaleString()}件を読み込みました(${f.name})`;
+    analyze(posts);
+  }catch(err){$('#astat').textContent='読み込みに失敗しました。tweets.js(または tweet.js)を選んでください。';console.error(err)}
+};
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+function barChart(title,labels,counts,avgs,note){
+  const mx=Math.max(...avgs,0.0001),top=avgs.indexOf(Math.max(...avgs));
+  return `<div class="card"><h2>${title}</h2><div class="meta">棒=平均いいね数(濃い棒が最大)${note||''}</div>
+  <div class="bars">${avgs.map((v,i)=>`<div class="${i===top&&counts[i]>=3?'top':''}" style="height:${Math.max(1,v/mx*100)}%" title="${labels[i]}: 平均${v.toFixed(1)} / ${counts[i]}件"></div>`).join('')}</div>
+  <div class="lab">${labels.map(l=>`<span>${l}</span>`).join('')}</div></div>`;
+}
+function analyze(all){
+  const own=all.filter(p=>!p.isRT);
+  const orig=own.filter(p=>!p.isReply);
+  const by=(arr,key,n)=>{const g=Array.from({length:n},()=>[]);arr.forEach(p=>g[key(p)].push(p.likes));return g};
+  const h=by(orig,p=>p.d.getHours(),24),w=by(orig,p=>p.d.getDay(),7);
+  const wl=['日','月','火','水','木','金','土'];
+  const types=[['通常(テキストのみ)',orig.filter(p=>!p.link&&!p.media)],['リンク付き',orig.filter(p=>p.link)],['画像・動画付き',orig.filter(p=>p.media)],['リプライ',own.filter(p=>p.isReply)]];
+  const buckets=[[0,40],[41,100],[101,200],[201,9999]].map(([a,b])=>[`${a}〜${b>999?'':b}字`,orig.filter(p=>{const n=wlen(p.text);return n>=a&&n<=b})]);
+  const min=Math.min(...all.map(p=>+p.d)),max=Math.max(...all.map(p=>+p.d));
+  const days=Math.max(1,(max-min)/864e5);
+  const top=[...orig].sort((a,b)=>b.likes-a.likes).slice(0,20);
+  const tbl=rows=>`<table><tr><th></th><th class="n">件数</th><th class="n">平均いいね</th></tr>${rows.map(([n,a])=>`<tr><td>${n}</td><td class="n">${a.length}</td><td class="n">${avg(a.map(p=>p.likes)).toFixed(1)}</td></tr>`).join('')}</table>`;
+  $('#aout').innerHTML=`
+  <div class="card"><h2>全体</h2><div class="grid">
+   <div class="kpi"><b>${all.length.toLocaleString()}</b><span>総ポスト数</span></div>
+   <div class="kpi"><b>${orig.length.toLocaleString()}</b><span>オリジナル(RT・リプ除く)</span></div>
+   <div class="kpi"><b>${(own.length/days*7).toFixed(1)}</b><span>週あたり投稿数</span></div>
+   <div class="kpi"><b>${avg(orig.map(p=>p.likes)).toFixed(1)}</b><span>平均いいね</span></div>
+   <div class="kpi"><b>${new Date(min).toLocaleDateString('ja-JP')}</b><span>最古の投稿</span></div></div></div>
+  ${barChart('時間帯別(0〜23時)',[...Array(24).keys()].map(String),h.map(a=>a.length),h.map(avg),'。3件未満の時間帯は強調しません')}
+  ${barChart('曜日別',wl,w.map(a=>a.length),w.map(avg))}
+  <div class="card"><h2>投稿タイプ別</h2>${tbl(types)}</div>
+  <div class="card"><h2>文字数別(X換算)</h2>${tbl(buckets)}</div>
+  <div class="card"><h2>反応が多かった投稿 TOP20(再利用・言い換え候補)</h2>
+   ${top.map(p=>`<div class="item"><p>${esc(p.text)}</p><div class="meta">♥${p.likes} 🔁${p.rt} ・ ${p.d.toLocaleDateString('ja-JP')}</div><div class="row"><button class="btn sec sm" data-text="${esc(p.text)}">下書きに複製</button></div></div>`).join('')}</div>`;
+  $('#aout').querySelectorAll('button[data-text]').forEach(b=>b.onclick=()=>{
+    drafts.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),text:b.dataset.text,tags:['再利用'],status:'idea',created:Date.now(),updated:Date.now()});
+    save();renderDrafts();b.textContent='複製しました';b.disabled=true});
+}
+</script>
+</body>
+</html>
