@@ -24,8 +24,6 @@ textarea{min-height:130px;resize:vertical}
 .btn.sec{background:transparent;color:var(--fg);border:1px solid var(--line)}
 .btn.sm{padding:3px 9px;font-size:12px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
-.cnt{font-variant-numeric:tabular-nums;font-size:13px;color:var(--mut)}
-.cnt.over{color:var(--ng);font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
 .kpi{background:var(--bg);border-radius:8px;padding:8px 10px}
 .kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--mut)}
@@ -38,7 +36,6 @@ textarea{min-height:130px;resize:vertical}
 .item p{margin:0 0 4px;white-space:pre-wrap;word-break:break-word}
 .meta{font-size:12px;color:var(--mut)}
 .tag{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 8px;font-size:12px;margin-right:4px;cursor:pointer}
-.part{background:var(--bg);border-radius:8px;padding:8px;margin-top:8px;white-space:pre-wrap}
 table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
@@ -57,15 +54,12 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     <textarea id="dtext" placeholder="思いついたことをここに書く"></textarea>
     <div class="row">
       <input type="text" id="dtags" placeholder="タグ(カンマ区切り)" style="flex:1;min-width:160px">
-      <span class="cnt" id="dcnt"></span>
     </div>
     <div class="row">
       <button class="btn" id="dsave">保存</button>
       <button class="btn sec" id="dcopy">コピー</button>
-      <button class="btn sec" id="dsplit">スレッドに分割</button>
       <button class="btn sec" id="dclear">クリア</button>
     </div>
-    <div id="dparts"></div>
   </div>
   <div class="card">
     <div class="row" style="margin:0 0 6px">
@@ -90,15 +84,6 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   <div id="aout"></div>
 </section>
 
-<!-- 文字数 -->
-<section id="s-cnt">
-  <div class="card">
-    <h2>文字数チェック(X換算)</h2>
-    <div class="sub">日本語など全角は2、半角英数は1、URLは23として280以内かを判定します。</div>
-    <textarea id="ctext"></textarea>
-    <div class="row"><span class="cnt" id="ccnt"></span></div>
-  </div>
-</section>
 </div>
 
 <script>
@@ -107,69 +92,35 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---- タブ ---- */
-const tabs=[['draft','下書き・ネタ帳'],['ana','投稿の振り返り'],['cnt','文字数']];
+const tabs=[['draft','下書き・ネタ帳'],['ana','投稿の振り返り']];
 tabs.forEach(([id,name],i)=>{const b=document.createElement('button');b.textContent=name;b.dataset.id=id;if(!i)b.className='on';
   b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==='s-'+id))};
   $('#nav').appendChild(b)});
-
-/* ---- X換算の文字数 ---- */
-function wlen(t){
-  t=t.replace(/https?:\/\/\S+/g,'\u0001'.repeat(1));
-  let n=0;
-  for(const ch of t){
-    if(ch==='\u0001'){n+=23;continue}
-    const c=ch.codePointAt(0);
-    n+=(c<=4351||(c>=8192&&c<=8205)||(c>=8208&&c<=8223)||(c>=8242&&c<=8247))?1:2;
-  }
-  return n;
-}
-function showCnt(el,t){const n=wlen(t);el.textContent=n+' / 280'+(n>280?'(超過 '+(n-280)+')':'');el.classList.toggle('over',n>280)}
-$('#ctext').oninput=e=>showCnt($('#ccnt'),e.target.value);showCnt($('#ccnt'),'');
-
-/* ---- スレッド分割(280換算以内、改行→句点→強制の順で区切る) ---- */
-function splitThread(text,limit=270){
-  const units=text.split(/\n{2,}|(?<=[。!?!?\n])/).map(s=>s.trim()).filter(Boolean);
-  const out=[];let cur='';
-  const push=()=>{if(cur){out.push(cur);cur=''}};
-  for(const u of units){
-    if(wlen(u)>limit){push();let buf='';for(const ch of u){if(wlen(buf+ch)>limit){out.push(buf);buf=''}buf+=ch}cur=buf;continue}
-    if(wlen(cur?cur+'\n'+u:u)>limit)push();
-    cur=cur?cur+'\n'+u:u;
-  }
-  push();
-  return out.length>1?out.map((p,i)=>p+`\n(${i+1}/${out.length})`):out;
-}
 
 /* ---- 下書き ---- */
 let drafts=LS.get('x_drafts',[]),editId=null,tagFilter='';
 const save=()=>LS.set('x_drafts',drafts);
 const tagsOf=s=>s.split(/[,、\s]+/).map(x=>x.trim()).filter(Boolean);
-$('#dtext').oninput=e=>showCnt($('#dcnt'),e.target.value);showCnt($('#dcnt'),'');
 $('#dsave').onclick=()=>{
   const text=$('#dtext').value.trim();if(!text)return;
   const tags=tagsOf($('#dtags').value);
   if(editId){const d=drafts.find(x=>x.id===editId);if(d){d.text=text;d.tags=tags;d.updated=Date.now()}}
   else drafts.unshift({id:Date.now().toString(36),text,tags,status:'idea',created:Date.now(),updated:Date.now()});
-  editId=null;save();$('#dtext').value='';$('#dtags').value='';$('#dparts').innerHTML='';showCnt($('#dcnt'),'');renderDrafts();
+  editId=null;save();$('#dtext').value='';$('#dtags').value='';renderDrafts();
 };
-$('#dclear').onclick=()=>{editId=null;$('#dtext').value='';$('#dtags').value='';$('#dparts').innerHTML='';showCnt($('#dcnt'),'')};
+$('#dclear').onclick=()=>{editId=null;$('#dtext').value='';$('#dtags').value='';};
 $('#dcopy').onclick=()=>navigator.clipboard.writeText($('#dtext').value);
-$('#dsplit').onclick=()=>{
-  const parts=splitThread($('#dtext').value);
-  $('#dparts').innerHTML=parts.map((p,i)=>`<div class="part">${esc(p)}<div class="row"><span class="cnt">${wlen(p)} / 280</span><button class="btn sec sm" data-i="${i}">コピー</button></div></div>`).join('');
-  $('#dparts').querySelectorAll('button').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(parts[b.dataset.i]));
-};
 function renderDrafts(){
   const q=$('#dq').value.toLowerCase(),st=$('#dstat').value;
   const all=[...new Set(drafts.flatMap(d=>d.tags))];
   $('#dtaglist').innerHTML=all.map(t=>`<span class="tag" data-t="${esc(t)}" style="${t===tagFilter?'background:var(--acc);color:#fff':''}">#${esc(t)}</span>`).join('');
   $('#dtaglist').querySelectorAll('.tag').forEach(el=>el.onclick=()=>{tagFilter=tagFilter===el.dataset.t?'':el.dataset.t;renderDrafts()});
   const list=drafts.filter(d=>(!q||d.text.toLowerCase().includes(q))&&(!st||d.status===st)&&(!tagFilter||d.tags.includes(tagFilter)));
-  $('#dlist').innerHTML=list.length?list.map(d=>`<div class="item"><p>${esc(d.text)}</p><div class="meta">${d.status==='done'?'✅投稿済み':'💡ネタ'} ・ ${wlen(d.text)}字 ・ ${new Date(d.updated).toLocaleDateString('ja-JP')} ${d.tags.map(t=>'#'+esc(t)).join(' ')}</div>
+  $('#dlist').innerHTML=list.length?list.map(d=>`<div class="item"><p>${esc(d.text)}</p><div class="meta">${d.status==='done'?'✅投稿済み':'💡ネタ'} ・ ${[...d.text].length}字 ・ ${new Date(d.updated).toLocaleDateString('ja-JP')} ${d.tags.map(t=>'#'+esc(t)).join(' ')}</div>
   <div class="row"><button class="btn sec sm" data-a="edit" data-id="${d.id}">編集</button><button class="btn sec sm" data-a="copy" data-id="${d.id}">コピー</button><button class="btn sec sm" data-a="tgl" data-id="${d.id}">${d.status==='done'?'ネタに戻す':'投稿済みにする'}</button><button class="btn sec sm" data-a="del" data-id="${d.id}">削除</button></div></div>`).join(''):'<div class="meta">該当なし</div>';
   $('#dlist').querySelectorAll('button').forEach(b=>b.onclick=()=>{
     const d=drafts.find(x=>x.id===b.dataset.id);if(!d)return;
-    if(b.dataset.a==='edit'){editId=d.id;$('#dtext').value=d.text;$('#dtags').value=d.tags.join(', ');showCnt($('#dcnt'),d.text);scrollTo(0,0)}
+    if(b.dataset.a==='edit'){editId=d.id;$('#dtext').value=d.text;$('#dtags').value=d.tags.join(', ');scrollTo(0,0)}
     if(b.dataset.a==='copy')navigator.clipboard.writeText(d.text);
     if(b.dataset.a==='tgl'){d.status=d.status==='done'?'idea':'done';save();renderDrafts()}
     if(b.dataset.a==='del'&&confirm('削除しますか?')){drafts=drafts.filter(x=>x!==d);save();renderDrafts()}
@@ -212,7 +163,7 @@ function analyze(all){
   const h=by(orig,p=>p.d.getHours(),24),w=by(orig,p=>p.d.getDay(),7);
   const wl=['日','月','火','水','木','金','土'];
   const types=[['通常(テキストのみ)',orig.filter(p=>!p.link&&!p.media)],['リンク付き',orig.filter(p=>p.link)],['画像・動画付き',orig.filter(p=>p.media)],['リプライ',own.filter(p=>p.isReply)]];
-  const buckets=[[0,40],[41,100],[101,200],[201,9999]].map(([a,b])=>[`${a}〜${b>999?'':b}字`,orig.filter(p=>{const n=wlen(p.text);return n>=a&&n<=b})]);
+  const buckets=[[0,40],[41,100],[101,200],[201,9999]].map(([a,b])=>[`${a}〜${b>999?'':b}字`,orig.filter(p=>{const n=[...p.text].length;return n>=a&&n<=b})]);
   const min=Math.min(...all.map(p=>+p.d)),max=Math.max(...all.map(p=>+p.d));
   const days=Math.max(1,(max-min)/864e5);
   const top=[...orig].sort((a,b)=>b.likes-a.likes).slice(0,20);
@@ -227,7 +178,7 @@ function analyze(all){
   ${barChart('時間帯別(0〜23時)',[...Array(24).keys()].map(String),h.map(a=>a.length),h.map(avg),'。3件未満の時間帯は強調しません')}
   ${barChart('曜日別',wl,w.map(a=>a.length),w.map(avg))}
   <div class="card"><h2>投稿タイプ別</h2>${tbl(types)}</div>
-  <div class="card"><h2>文字数別(X換算)</h2>${tbl(buckets)}</div>
+  <div class="card"><h2>文字数別</h2>${tbl(buckets)}</div>
   <div class="card"><h2>反応が多かった投稿 TOP20(再利用・言い換え候補)</h2>
    ${top.map(p=>`<div class="item"><p>${esc(p.text)}</p><div class="meta">♥${p.likes} 🔁${p.rt} ・ ${p.d.toLocaleDateString('ja-JP')}</div><div class="row"><button class="btn sec sm" data-text="${esc(p.text)}">下書きに複製</button></div></div>`).join('')}</div>`;
   $('#aout').querySelectorAll('button[data-text]').forEach(b=>b.onclick=()=>{
