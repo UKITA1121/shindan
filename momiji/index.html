@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#B93A26">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <title>もみじクライマックス 投稿サポート</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -19,10 +23,9 @@
 html{-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .wrap{max-width:720px;margin:0 auto;padding:12px 16px}
-header.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 0 12px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 10px}
 header.top h1{font-size:17px;font-weight:700}
 header.top h1 span{color:var(--accent)}
-header.top small{color:var(--ink2);font-size:12px}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:20}
 nav.tabs button{flex:1;max-width:144px;background:none;border:0;color:var(--ink2);font:inherit;font-size:11px;padding:8px 0 10px;cursor:pointer}
 nav.tabs button b{display:block;font-size:19px;font-weight:400;line-height:1.3}
@@ -30,83 +33,108 @@ nav.tabs button.on{color:var(--accent);font-weight:700}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
 .card h2{font-size:14px;margin-bottom:8px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
 .grow{flex:1;min-width:0}
 .muted{color:var(--ink2);font-size:12px}
 .num{font-variant-numeric:tabular-nums}
+.clip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 input,select,textarea,button{font:inherit;color:inherit}
-input[type=text],input[type=search],input[type=date],input[type=month],input[type=number],input[type=url],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+input[type=text],input[type=search],input[type=date],input[type=time],input[type=month],input[type=number],input[type=url],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
 textarea{resize:vertical;min-height:96px}
-label.f{display:block;font-size:12px;color:var(--ink2);margin-bottom:10px}
-label.f>span{display:block;margin-bottom:3px}
+label.f,div.f{display:block;font-size:12px;color:var(--ink2);margin-bottom:10px}
+label.f>span,div.f>span{display:block;margin-bottom:3px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
-.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px;white-space:nowrap}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
 .btn.sm{padding:4px 10px;min-height:32px;font-size:13px}
 .btn.danger{color:var(--accent)}
+.btn.icon{border:0;background:none;font-size:20px;padding:4px 8px}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;border-radius:28px;padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .chip{display:inline-block;background:var(--soft);color:var(--ink);border-radius:20px;padding:1px 9px;font-size:12px;margin:2px 4px 2px 0;border:0}
 button.chip{cursor:pointer;min-height:28px}
-.badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:11px;color:var(--ink2)}
+button.chip.line{background:none;border:1px solid var(--line);color:var(--ink2)}
+button.chip.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:11px;color:var(--ink2);background:none}
 .badge.ok{color:var(--ok);border-color:var(--ok)}
 .badge.warn{color:var(--warn);border-color:var(--warn)}
-.visit{cursor:pointer}
-.visit .hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.visit .store{font-weight:700;overflow-wrap:anywhere}
-.visit .ep{font-size:13px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
+.tap{cursor:pointer}
+.hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.store{font-weight:700;overflow-wrap:anywhere}
+.ep{font-size:13px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
 .thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .thumbs .ph{position:relative}
 .thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;cursor:zoom-in;border:1px solid var(--line)}
 .thumbs .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:12px;cursor:pointer}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;cursor:zoom-in;border:1px solid var(--line)}
 .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
-@media(min-width:560px){.tiles{grid-template-columns:repeat(4,1fr)}}
-.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
-.tile .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.tiles.t3{grid-template-columns:repeat(3,1fr)}
+@media(min-width:560px){.tiles.t4{grid-template-columns:repeat(4,1fr)}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;min-width:0}
+.tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .tile .k{font-size:11px;color:var(--ink2)}
+.tile .d{font-size:11px;color:var(--ink2)}
 .seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:10px;overflow-x:auto}
 .seg button{flex:1;border:0;background:none;padding:6px 10px;border-radius:7px;cursor:pointer;white-space:nowrap;font-size:13px;color:var(--ink2);min-height:34px}
 .seg button.on{background:var(--soft);color:var(--ink);font-weight:700}
 .tblwrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13px}
 th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);max-width:130px;overflow:hidden;text-overflow:ellipsis}
 th{font-size:11px;color:var(--ink2);font-weight:500;cursor:pointer}
 th.on{color:var(--accent);font-weight:700}
 .chart svg{width:100%;height:auto;display:block}
 .chart .read{font-size:12px;color:var(--ink2);min-height:20px}
 .chart .read b{color:var(--ink);font-size:14px}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}
+.meter i{display:block;height:100%;background:var(--bar);border-radius:5px}
 dialog{border:0;background:var(--bg);color:var(--ink);width:100%;max-width:640px;max-height:100dvh;height:100dvh;margin:0 auto;padding:0}
 @media(min-width:680px){dialog{height:auto;max-height:92dvh;margin:auto;border-radius:16px}}
 dialog::backdrop{background:rgba(0,0,0,.5)}
 .dhead{position:sticky;top:0;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);z-index:2}
 .dhead h2{font-size:16px}
 .dbody{padding:14px 16px 24px}
-#viewer{background:rgba(0,0,0,.9);max-width:none;height:100dvh;max-height:100dvh}
+#viewer{background:#000;color:#fff;max-width:none;height:100dvh;max-height:100dvh}
 #viewer img{width:100%;height:100%;object-fit:contain}
-.empty{text-align:center;color:var(--ink2);padding:32px 12px;font-size:13px}
+#viewer .cap{position:absolute;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(0,0,0,.6);font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+#viewer .cap button{background:#fff;color:#000;border:0}
+.empty{text-align:center;color:var(--ink2);padding:28px 12px;font-size:13px}
 details.filt summary{cursor:pointer;font-size:13px;color:var(--ink2);padding:4px 0}
 .plan{display:flex;gap:12px;align-items:flex-start}
 .plan .d{flex:none;width:58px;text-align:center;background:var(--soft);border-radius:10px;padding:6px 0;font-weight:700;line-height:1.3}
 .plan .d small{display:block;font-weight:400;font-size:11px}
-#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
-#toast.on{opacity:1}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal .w{font-size:11px;color:var(--ink2);padding:2px 0}
+.cal button{background:var(--bg);border:1px solid transparent;border-radius:8px;min-height:48px;padding:3px 0;cursor:pointer;font-size:13px;line-height:1.25}
+.cal button.today{border-color:var(--ink2)}
+.cal button.sel{border-color:var(--accent);background:var(--soft)}
+.cal button small{display:block;font-size:10px;min-height:13px;color:var(--accent);letter-spacing:1px}
+.todo{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.todo:last-child{border-bottom:0}
+ul.ins{list-style:none;font-size:13px}
+ul.ins li{padding:5px 0;border-bottom:1px solid var(--line)}
+ul.ins li:last-child{border-bottom:0}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s;display:flex;gap:12px;align-items:center;white-space:nowrap}
+#toast.on{opacity:1;pointer-events:auto}
+#toast button{background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top"><h1>🍁 <span>もみじクライマックス</span> 投稿サポート</h1></header>
+  <header class="top"><h1>🍁 <span>もみじクライマックス</span> 投稿サポート</h1><button class="btn icon" data-act="tab" data-k="conf" aria-label="設定">⚙️</button></header>
   <main id="main"></main>
 </div>
 <nav class="tabs" id="tabs">
-  <button data-tab="visits"><b>📒</b>来店</button>
-  <button data-tab="posts"><b>✍️</b>投稿</button>
-  <button data-tab="stats"><b>📊</b>分析</button>
-  <button data-tab="plan"><b>🗓️</b>提案</button>
-  <button data-tab="conf"><b>⚙️</b>設定</button>
+  <button data-act="tab" data-k="home"><b>🏠</b>ホーム</button>
+  <button data-act="tab" data-k="visits"><b>📒</b>来店</button>
+  <button data-act="tab" data-k="posts"><b>✍️</b>投稿</button>
+  <button data-act="tab" data-k="stats"><b>📊</b>分析</button>
+  <button data-act="tab" data-k="plan"><b>🗓️</b>予定</button>
 </nav>
 <dialog id="dlg"></dialog>
-<dialog id="viewer"><img alt=""></dialog>
+<dialog id="viewer"><img alt=""><div class="cap"><span id="vcap"></span><button class="btn sm" id="vopen">来店を開く</button></div></dialog>
 <div id="toast"></div>
-<datalist id="dl-area"></datalist><datalist id="dl-store"></datalist>
+<datalist id="dl-area"></datalist><datalist id="dl-store"></datalist><datalist id="dl-cast"></datalist>
 
 <script>
 'use strict';
@@ -122,14 +150,21 @@ const today=()=>ymd(new Date());
 const WD=['日','月','火','水','木','金','土'];
 const wdOf=s=>new Date(s+'T00:00:00').getDay();
 const dlabel=s=>{const[y,m,d]=s.split('-');return `${y}/${+m}/${+d}（${WD[wdOf(s)]}）`};
+const mdlabel=s=>{const[,m,d]=s.split('-');return `${+m}/${+d}（${WD[wdOf(s)]}）`};
+const daysAgo=s=>Math.round((new Date(today()+'T00:00:00')-new Date(s+'T00:00:00'))/864e5);
+const addMonth=(ym,n)=>{const[y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+n,1);return `${d.getFullYear()}-${pad(d.getMonth()+1)}`};
+const ymLabel=ym=>`${ym.slice(0,4)}年${+ym.slice(5)}月`;
 const splitList=s=>[...new Set(String(s||'').split(/[,、，\n]/).map(x=>x.trim()).filter(Boolean))];
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja'));
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1800)}
+const sum=(a,f)=>a.reduce((t,x)=>t+f(x),0);
+let undoFn=null;
+function toast(m,undo){const t=$('#toast');undoFn=undo||null;t.innerHTML=esc(m)+(undo?'<button data-act="undo">元に戻す</button>':'');t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>{t.classList.remove('on');undoFn=null},undo?6000:1800)}
 
 /* ---------- storage ---------- */
 let db;
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('momiji-climax',1);
-  r.onupgradeneeded=()=>{for(const s of['visits','posts','photos'])r.result.createObjectStore(s,{keyPath:'id'})};
+const STORES=['visits','posts','photos','plans','notes'];
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('momiji-climax',2);
+  r.onupgradeneeded=()=>{for(const s of STORES)if(!r.result.objectStoreNames.contains(s))r.result.createObjectStore(s,{keyPath:'id'})};
   r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 function tx(store,mode,fn){return new Promise((res,rej)=>{const t=db.transaction(store,mode);const q=fn(t.objectStore(store));
   t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})}
@@ -139,47 +174,110 @@ const dbPut=(s,v)=>tx(s,'readwrite',o=>o.put(v));
 const dbDel=(s,id)=>tx(s,'readwrite',o=>o.delete(id));
 const dbClear=s=>tx(s,'readwrite',o=>o.clear());
 
-const DEF={w:{likes:1,reposts:2,replies:2,imps:0},hashtags:'',budget:'',target:''};
+const DEF={w:{likes:1,reposts:2,replies:2,imps:0},hashtags:'',budget:'',target:'',ngWd:[]};
 let conf=structuredClone(DEF);
 try{const c=JSON.parse(localStorage.getItem('momiji-conf')||'{}');conf={...DEF,...c,w:{...DEF.w,...(c.w||{})}}}catch(e){}
 const saveConf=()=>{try{localStorage.setItem('momiji-conf',JSON.stringify(conf))}catch(e){}};
 
 /* ---------- state ---------- */
-let visits=[],posts=[];
-const ui={tab:'visits',q:'',f:{area:'',store:'',cast:'',from:'',to:'',unposted:false,photo:false},sort:'date',
-  pseg:'stock',range:'6',dim:'store',tsort:'visits',planMonth:''};
-let byVisit=new Map();
-function reindex(){byVisit=new Map();for(const p of posts){if(!p.visitId)continue;if(!byVisit.has(p.visitId))byVisit.set(p.visitId,[]);byVisit.get(p.visitId).push(p)}}
+let visits=[],posts=[],plans=[],notes=new Map();
+const F0=()=>({area:'',store:'',cast:'',tag:'',from:'',to:'',unposted:false,photo:false});
+const ui={tab:'home',q:'',f:F0(),sort:'date',vseg:'list',pseg:'stock',range:'6',dim:'store',tsort:'visits',
+  cal:today().slice(0,7),day:today(),planMonth:addMonth(today().slice(0,7),1),showPlan:false};
+let byVisit=new Map(),M=null;
 const score=p=>(+p.likes||0)*conf.w.likes+(+p.reposts||0)*conf.w.reposts+(+p.replies||0)*conf.w.replies+(+p.imps||0)*conf.w.imps;
 // 来店の反響 = 紐づく「投稿済」投稿のスコア合計。n=0 は「未評価」（0点ではない）
-function react(v){const ps=(byVisit.get(v.id)||[]).filter(p=>p.status==='posted');return{n:ps.length,s:ps.reduce((a,p)=>a+score(p),0)}}
+function react(v){const ps=(byVisit.get(v.id)||[]).filter(p=>p.status==='posted');return{n:ps.length,s:sum(ps,score)}}
+const K=2; // 少ない実績を全体平均に寄せる強さ
+function buildModel(){
+  byVisit=new Map();for(const p of posts){if(!p.visitId)continue;if(!byVisit.has(p.visitId))byVisit.set(p.visitId,[]);byVisit.get(p.visitId).push(p)}
+  const ev=visits.map(v=>({v,r:react(v)})).filter(x=>x.r.n),g=ev.length?sum(ev,x=>x.r.s)/ev.length:0;
+  const mk=fn=>{const m=new Map();for(const x of ev)for(const k of fn(x.v)){const o=m.get(k)||{sum:0,n:0};o.sum+=x.r.s;o.n++;m.set(k,o)}return m};
+  const sh=(s,n)=>(s+K*g)/(n+K);
+  M={ev,g,sh,store:mk(v=>[v.store]),cast:mk(v=>v.casts),tag:mk(v=>v.tags),wd:mk(v=>[wdOf(v.date)]),photo:mk(v=>[v.photos.length?'あり':'なし']),
+    est(map,k){const o=map.get(k);return o?sh(o.sum,o.n):g}};
+}
+// 来店1件の期待反響（店舗・キャスト・タグの実績から）
+function expected(v){const xs=[M.est(M.store,v.store),...v.casts.map(c=>M.est(M.cast,c)),...v.tags.map(t=>M.est(M.tag,t))];return sum(xs,x=>x)/xs.length}
+const isStock=v=>!v.skip&&!(byVisit.get(v.id)||[]).length;
+const noMetrics=p=>p.status==='posted'&&!(+p.likes||+p.reposts||+p.replies||+p.imps);
+const note=id=>notes.get(id)||{id};
+async function saveNote(n){notes.set(n.id,n);await dbPut('notes',n)}
 
 /* ---------- photos ---------- */
 function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=rej;i.src=u})}
 function shrink(img,max,q){const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
-async function openViewer(id,pending){let d=pending;if(!d){const r=await dbGet('photos',id);d=r&&r.data}if(!d)return;$('#viewer img').src=d;$('#viewer').showModal()}
-$('#viewer').addEventListener('click',()=>$('#viewer').close());
+async function openViewer(id,pending){let d=pending;if(!d){const r=await dbGet('photos',id);d=r&&r.data}if(!d)return;
+  const v=visits.find(x=>x.photos.some(p=>p.id===id));$('#viewer img').src=d;
+  $('#vcap').textContent=v?`${dlabel(v.date)} ${v.store} ${v.casts.join('、')}`:'';$('#vopen').hidden=!v||$('#dlg').open;$('#vopen').dataset.id=v?v.id:'';$('#viewer').showModal()}
+$('#viewer').addEventListener('click',e=>{$('#viewer').close();if(e.target.id==='vopen')openVisit(e.target.dataset.id)});
 
 /* ---------- render root ---------- */
 function render(){
-  reindex();
-  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
-  $('#dl-area').innerHTML=uniq(visits.map(v=>v.area)).map(a=>`<option value="${esc(a)}">`).join('');
-  $('#dl-store').innerHTML=uniq(visits.map(v=>v.store)).map(a=>`<option value="${esc(a)}">`).join('');
-  ({visits:renderVisits,posts:renderPosts,stats:renderStats,plan:renderPlan,conf:renderConf})[ui.tab]();
+  buildModel();
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===ui.tab));
+  const dl=(id,a)=>$(id).innerHTML=uniq(a).map(x=>`<option value="${esc(x)}">`).join('');
+  dl('#dl-area',visits.map(v=>v.area));dl('#dl-store',visits.map(v=>v.store));dl('#dl-cast',visits.flatMap(v=>v.casts));
+  ({home:renderHome,visits:renderVisits,posts:renderPosts,stats:renderStats,plan:renderPlan,conf:renderConf})[ui.tab]();
 }
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.tab=b.dataset.tab;render();scrollTo(0,0)});
+const go=(tab,patch)=>{ui.tab=tab;Object.assign(ui,patch||{});render();scrollTo(0,0)};
+const chips=(arr,kind)=>arr.map(c=>`<button type="button" class="chip" data-act="ent" data-kind="${kind}" data-name="${esc(c)}">${esc(c)}</button>`).join('');
+
+/* ---------- ホーム ---------- */
+function monthStat(ym){const l=visits.filter(v=>v.date.startsWith(ym));return{n:l.length,spend:sum(l,v=>v.amount),react:sum(l,v=>react(v).s)}}
+function insights(){
+  if(M.ev.length<5||!M.g)return[];const out=[];
+  const scan=(label,map,name=k=>k)=>{for(const[k,o]of map){if(!k&&k!==0||o.n<2)continue;const d=M.sh(o.sum,o.n)/M.g-1;if(Math.abs(d)>=.12)out.push({d,t:`${label}「${esc(name(k))}」は来店あたり反響 ${fmt1(o.sum/o.n)}（${o.n}回・全体平均比 ${d>0?'+':''}${Math.round((o.sum/o.n/M.g-1)*100)}%）`})}};
+  scan('店舗',M.store);scan('キャスト',M.cast);scan('タグ',M.tag);scan('来店曜日',M.wd,k=>WD[k]+'曜');scan('チェキ',M.photo);
+  const up=out.filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,3),dn=out.filter(x=>x.d<0).sort((a,b)=>a.d-b.d).slice(0,2);
+  return[...up.map(x=>'📈 '+x.t),...dn.map(x=>'📉 '+x.t)];
+}
+function upcoming(){const td=today();return plans.filter(p=>p.date>=td).sort((a,b)=>a.date.localeCompare(b.date))}
+function renderHome(){
+  const ym=today().slice(0,7),a=monthStat(ym),b=monthStat(addMonth(ym,-1)),td=today();
+  const due=plans.filter(p=>p.type==='plan'&&p.date<=td).sort((x,y)=>x.date.localeCompare(y.date));
+  const nm=posts.filter(noMetrics),stock=visits.filter(isStock).sort((x,y)=>expected(y)-expected(x));
+  const next=upcoming().filter(p=>p.date>td).slice(0,3);
+  const planned=sum(plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym)),p=>+p.est||0),bud=+conf.budget||0;
+  const stores=agg(visits.filter(v=>v.store),v=>[v.store]).map(o=>({...o,last:visits.filter(v=>v.store===o.key).reduce((m,v)=>v.date>m?v.date:m,'')}))
+    .filter(o=>o.visits>=2&&daysAgo(o.last)>=45).sort((x,y)=>M.est(M.store,y.key)-M.est(M.store,x.key)).slice(0,3);
+  const ins=insights();
+  const todo=[
+    ...due.map(p=>`<div class="todo"><div class="grow"><b>${p.date===td?'今日の予定':'記録待ちの予定'}</b>：${esc(p.store)} <span class="muted">${mdlabel(p.date)}${p.cast?'・'+esc(p.cast):''}</span></div><button class="btn sm pri" data-act="plan-rec" data-id="${p.id}">記録する</button><button class="btn sm" data-act="del-plan" data-id="${p.id}">取消</button></div>`),
+    nm.length?`<div class="todo"><div class="grow"><b>反響が未入力の投稿</b> ${nm.length}件<div class="muted">入力すると分析と提案の精度が上がります</div></div><button class="btn sm" data-act="goto" data-tab="posts" data-seg="posted">入力する</button></div>`:'',
+    stock.length?`<div class="todo"><div class="grow"><b>ネタ在庫</b> ${stock.length}件<div class="muted clip">おすすめ：${mdlabel(stock[0].date)} ${esc(stock[0].store)}${M.ev.length?`（期待反響 ${fmt1(expected(stock[0]))}）`:''}</div></div><button class="btn sm" data-act="new-post" data-id="${stock[0].id}">投稿を作る</button></div>`:''
+  ].filter(Boolean);
+  const diff=(x,y,f)=>y?`先月 ${f(y)}`:'先月 記録なし';
+  $('#main').innerHTML=`
+  <div class="tiles t3">
+    <div class="tile"><div class="k">今月の来店</div><div class="v">${a.n}<small> 回</small></div><div class="d">${diff(a.n,b.n,x=>x+'回')}</div></div>
+    <div class="tile"><div class="k">今月の利用額</div><div class="v" style="font-size:16px;line-height:1.9">${yen(a.spend)}</div><div class="d">${diff(a.spend,b.spend,yen)}</div></div>
+    <div class="tile"><div class="k">今月の反響</div><div class="v">${fmt1(a.react)}</div><div class="d">${diff(a.react,b.react,fmt1)}</div></div>
+  </div>
+  <div class="card">${bud?`<div class="hd"><h2>今月の予算</h2><span class="num muted">${yen(a.spend)} / ${yen(bud)}</span></div>
+    <div class="meter"><i style="width:${Math.min(100,a.spend/bud*100)}%"></i></div>
+    <div class="muted">${a.spend>bud?`<b style="color:var(--warn)">⚠ 予算を ${yen(a.spend-bud)} 超えています</b>`:`残り ${yen(bud-a.spend)}`}${planned?`・今後の予定分の想定 ${yen(planned)}${a.spend<=bud&&a.spend+planned>bud?'（⚠ 予定どおりだと超過）':''}`:''}</div>`
+    :`<div class="row between"><span class="muted">月の予算を設定すると、残り予算と使いすぎの注意が表示されます。</span><button class="btn sm" data-act="tab" data-k="conf">設定する</button></div>`}</div>
+  <div class="card"><h2>やること</h2>${todo.length?todo.join(''):`<div class="muted">いまやることはありません。</div>`}</div>
+  <div class="card"><div class="hd"><h2>これからの予定</h2><button class="btn sm" data-act="tab" data-k="plan">カレンダー</button></div>
+    ${next.length?next.map(p=>`<div class="todo"><div class="grow">${mdlabel(p.date)}　<b>${esc(p.type==='event'?'★ '+p.title:p.store)}</b> <span class="muted">${esc(p.type==='event'?p.store:p.cast)}</span></div></div>`).join(''):`<div class="muted">予定はありません。予定タブで来店スケジュールの提案を受けられます。</div>`}</div>
+  ${ins.length?`<div class="card"><h2>反響の傾向</h2><ul class="ins">${ins.map(t=>`<li>${t}</li>`).join('')}</ul></div>`:''}
+  ${stores.length?`<div class="card"><h2>しばらく行っていない店舗</h2>${stores.map(o=>`<div class="todo"><div class="grow tap" data-act="ent" data-kind="store" data-name="${esc(o.key)}"><b>${esc(o.key)}</b> <span class="muted">${daysAgo(o.last)}日前・来店${o.visits}回${M.ev.length?`・期待反響 ${fmt1(M.est(M.store,o.key))}`:''}</span></div></div>`).join('')}</div>`:''}
+  ${visits.length?'':`<div class="empty">まずは「＋ 来店を記録」から始めてください。<br>動きを試すには、右上の⚙️ → サンプルデータを追加。</div>`}
+  <button class="btn pri fab" data-act="new-visit">＋ 来店を記録</button>`;
+}
 
 /* ---------- 来店 ---------- */
 function filtered(){
   const toks=ui.q.toLowerCase().split(/\s+/).filter(Boolean),f=ui.f;
-  let r=visits.filter(v=>{
+  const r=visits.filter(v=>{
     if(f.area&&v.area!==f.area)return false;
     if(f.store&&v.store!==f.store)return false;
     if(f.cast&&!v.casts.includes(f.cast))return false;
+    if(f.tag&&!v.tags.includes(f.tag))return false;
     if(f.from&&v.date.slice(0,7)<f.from)return false;
     if(f.to&&v.date.slice(0,7)>f.to)return false;
-    if(f.unposted&&(byVisit.get(v.id)||[]).length)return false;
+    if(f.unposted&&!isStock(v))return false;
     if(f.photo&&!v.photos.length)return false;
     if(toks.length){const hay=[v.date,v.area,v.store,v.casts.join(' '),v.episode,v.tags.join(' '),v.amount,(byVisit.get(v.id)||[]).map(p=>p.text).join(' ')].join(' ').toLowerCase();
       if(!toks.every(t=>hay.includes(t)))return false}
@@ -189,128 +287,185 @@ function filtered(){
 }
 function visitCard(v,extra=''){
   const r=react(v),ps=byVisit.get(v.id)||[];
-  const st=r.n?`<span class="badge ok">投稿済 ${r.n}・反響 ${fmt1(r.s)}</span>`:ps.length?`<span class="badge">下書きあり</span>`:`<span class="badge warn">未投稿</span>`;
-  return `<div class="card visit" data-act="edit-visit" data-id="${v.id}">
+  const st=r.n?`<span class="badge ok">投稿済 ${r.n}・反響 ${fmt1(r.s)}</span>`:ps.length?`<span class="badge">下書きあり</span>`:v.skip?`<span class="badge">投稿しない</span>`:`<span class="badge warn">未投稿</span>`;
+  return `<div class="card tap" data-act="edit-visit" data-id="${v.id}">
     <div class="hd"><span class="muted">${dlabel(v.date)}</span><span class="num"><b>${yen(v.amount)}</b></span></div>
     <div class="store">${esc(v.store||'（店舗未入力）')} <span class="muted">${esc(v.area)}</span></div>
-    <div>${v.casts.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}${v.tags.map(t=>`<span class="badge">#${esc(t)}</span> `).join('')}</div>
+    <div>${chips(v.casts,'cast')}${v.tags.map(t=>`<button class="badge" data-act="ftag" data-name="${esc(t)}">#${esc(t)}</button> `).join('')}</div>
     ${v.episode?`<div class="ep">${esc(v.episode)}</div>`:''}
-    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ">`).join('')}</div>`:''}
-    <div class="row" style="margin-top:8px;justify-content:space-between">${st}${extra}</div></div>`;
+    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ" loading="lazy">`).join('')}</div>`:''}
+    <div class="row between" style="margin-top:8px">${st}${extra}</div></div>`;
 }
 function renderVisits(){
-  const m=today().slice(0,7),tm=visits.filter(v=>v.date.startsWith(m));
   const f=ui.f,opt=(arr,cur,all)=>`<option value="">${all}</option>`+arr.map(a=>`<option ${a===cur?'selected':''}>${esc(a)}</option>`).join('');
-  const nf=Object.values(f).filter(Boolean).length;
+  const ym=today().slice(0,7),thisM=f.from===ym&&f.to===ym;
+  const act=[['area','エリア'],['store','店舗'],['cast','キャスト'],['tag','タグ']].filter(([k])=>f[k]).map(([k,l])=>`<button class="chip on" data-act="unf" data-k="${k}">${l}：${esc(f[k])} ✕</button>`).join('');
   $('#main').innerHTML=`
-  <div class="tiles" style="grid-template-columns:1fr 1fr">
-    <div class="tile"><div class="k">今月の来店</div><div class="v">${tm.length}<small> 回</small></div></div>
-    <div class="tile"><div class="k">今月の利用額</div><div class="v">${yen(tm.reduce((a,v)=>a+v.amount,0))}</div></div>
-  </div>
-  <div class="card">
+  <div class="seg">${[['list','リスト'],['gal','チェキ'],['cast','キャスト'],['store','店舗']].map(([k,l])=>`<button data-act="vseg" data-k="${k}" class="${ui.vseg===k?'on':''}">${l}</button>`).join('')}</div>
+  ${ui.vseg==='list'||ui.vseg==='gal'?`<div class="card">
     <input type="search" id="q" placeholder="検索：店舗・キャスト・出来事・タグ…（スペースでAND）" value="${esc(ui.q)}">
-    <details class="filt" ${nf?'open':''}><summary>絞り込み・並び替え${nf?`（${nf}件適用中）`:''}</summary>
+    <div style="margin-top:8px"><button class="chip line ${thisM?'on':''}" data-act="qf" data-k="month">今月</button><button class="chip line ${f.unposted?'on':''}" data-act="qf" data-k="unposted">未投稿</button><button class="chip line ${f.photo?'on':''}" data-act="qf" data-k="photo">チェキあり</button>${act}</div>
+    <details class="filt"><summary>くわしい絞り込み・並び替え</summary>
       <div class="grid2" style="margin-top:8px">
         <label class="f"><span>エリア</span><select data-f="area">${opt(uniq(visits.map(v=>v.area)),f.area,'すべて')}</select></label>
         <label class="f"><span>店舗</span><select data-f="store">${opt(uniq(visits.map(v=>v.store)),f.store,'すべて')}</select></label>
         <label class="f"><span>キャスト</span><select data-f="cast">${opt(uniq(visits.flatMap(v=>v.casts)),f.cast,'すべて')}</select></label>
-        <label class="f"><span>並び順</span><select id="sort">${[['date','新しい順'],['old','古い順'],['amount','利用額が高い順'],['react','反響が大きい順']].map(([k,l])=>`<option value="${k}" ${ui.sort===k?'selected':''}>${l}</option>`).join('')}</select></label>
+        <label class="f"><span>タグ</span><select data-f="tag">${opt(uniq(visits.flatMap(v=>v.tags)),f.tag,'すべて')}</select></label>
         <label class="f"><span>期間（開始月）</span><input type="month" data-f="from" value="${f.from}"></label>
         <label class="f"><span>期間（終了月）</span><input type="month" data-f="to" value="${f.to}"></label>
+        <label class="f"><span>並び順</span><select id="sort">${[['date','新しい順'],['old','古い順'],['amount','利用額が高い順'],['react','反響が大きい順']].map(([k,l])=>`<option value="${k}" ${ui.sort===k?'selected':''}>${l}</option>`).join('')}</select></label>
+        <div class="f"><span>&nbsp;</span><button class="btn" data-act="clear-filter" style="width:100%">すべてクリア</button></div>
       </div>
-      <div class="row"><label><input type="checkbox" data-f="unposted" ${f.unposted?'checked':''}> 未投稿のみ</label>
-      <label><input type="checkbox" data-f="photo" ${f.photo?'checked':''}> チェキあり</label>
-      <button class="btn sm" data-act="clear-filter" style="margin-left:auto">クリア</button></div>
     </details>
-  </div>
+  </div>`:''}
   <div id="vlist"></div>
   <button class="btn pri fab" data-act="new-visit">＋ 来店を記録</button>`;
   drawVisitList();
 }
 function drawVisitList(){
+  const box=$('#vlist');if(!box)return;
+  if(ui.vseg==='cast'||ui.vseg==='store'){
+    const kind=ui.vseg,rows=agg(visits,kind==='cast'?v=>v.casts:v=>v.store?[v.store]:[]).sort((a,b)=>b.visits-a.visits);
+    box.innerHTML=rows.length?rows.map(o=>{const n=note(kind+':'+o.key),last=visits.filter(v=>kind==='cast'?v.casts.includes(o.key):v.store===o.key).reduce((m,v)=>v.date>m?v.date:m,'');
+      return `<div class="card tap" data-act="ent" data-kind="${kind}" data-name="${esc(o.key)}"><div class="hd"><span class="store">${n.oshi?'💗 ':''}${esc(o.key)}</span><span class="num"><b>${yen(o.spend)}</b></span></div>
+      <div class="muted">来店 ${o.visits}回・最終 ${daysAgo(last)}日前・反響/来店 ${o.per==null?'—':fmt1(o.per)}${n.birthday?`・🎂 ${+n.birthday.slice(0,2)}/${+n.birthday.slice(3)}`:''}</div></div>`}).join(''):`<div class="empty">来店を記録すると、${kind==='cast'?'キャスト':'店舗'}ごとのまとめが表示されます。</div>`;
+    return}
   const r=filtered();
-  $('#vlist').innerHTML=`<p class="muted" style="margin:0 2px 8px">${r.length}件・合計 ${yen(r.reduce((a,v)=>a+v.amount,0))}</p>`+
-    (r.length?r.map(v=>visitCard(v)).join(''):`<div class="empty">${visits.length?'条件に合う来店記録がありません。':'まだ来店記録がありません。<br>右下の「＋ 来店を記録」から始めてください。'}</div>`);
+  const head=`<p class="muted" style="margin:0 2px 8px">${r.length}件・合計 ${yen(sum(r,v=>v.amount))}</p>`;
+  if(ui.vseg==='gal'){const ph=r.flatMap(v=>v.photos);
+    box.innerHTML=ph.length?`<p class="muted" style="margin:0 2px 8px">写真 ${ph.length}枚</p><div class="gal">${ph.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ" loading="lazy">`).join('')}</div>`:`<div class="empty">条件に合う写真がありません。</div>`;return}
+  box.innerHTML=head+(r.length?r.map(v=>visitCard(v)).join(''):`<div class="empty">${visits.length?'条件に合う来店記録がありません。':'まだ来店記録がありません。<br>右下の「＋ 来店を記録」から始めてください。'}</div>`);
 }
 
 /* ---------- 来店フォーム ---------- */
-let form=null;
-function openVisit(id){
-  const v=id?visits.find(x=>x.id===id):null;
-  form={id:v?v.id:null,photos:v?v.photos.map(p=>({...p})):[],removed:[]};
+let form=null,dirty=false;
+function showDlg(html){$('#dlg').innerHTML=html;dirty=false;if(!$('#dlg').open)$('#dlg').showModal();$('#dlg').scrollTop=0}
+function closeDlg(force){if(!force&&dirty&&!confirm('入力中の内容を破棄して閉じますか？'))return;dirty=false;$('#dlg').close()}
+$('#dlg').addEventListener('cancel',e=>{e.preventDefault();closeDlg()});
+$('#dlg').addEventListener('input',()=>dirty=true);
+function openVisit(id,pre){
+  const v=id?visits.find(x=>x.id===id):null,d=v||pre||{};
+  form={id:v?v.id:null,photos:v?v.photos.map(p=>({...p})):[],removed:[],planId:pre&&pre.planId||null};
   const ps=v?(byVisit.get(v.id)||[]):[];
-  $('#dlg').innerHTML=`<form id="vform"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${v?'来店記録を編集':'来店を記録'}</h2><button class="btn pri sm">保存</button></div>
+  const fav=agg(visits.filter(x=>x.store),x=>[x.store]).sort((a,b)=>b.visits-a.visits).slice(0,6).map(o=>o.key);
+  showDlg(`<form id="vform"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${v?'来店記録を編集':'来店を記録'}</h2><button class="btn pri sm">保存</button></div>
   <div class="dbody">
     <div class="grid2">
-      <label class="f"><span>来店日</span><input type="date" name="date" required value="${v?v.date:today()}"></label>
-      <label class="f"><span>利用額（円）</span><input type="number" name="amount" inputmode="numeric" min="0" step="1" value="${v?v.amount:''}" placeholder="0"></label>
-      <label class="f"><span>店舗</span><input type="text" name="store" list="dl-store" value="${esc(v?.store)}" autocomplete="off"></label>
-      <label class="f"><span>エリア</span><input type="text" name="area" list="dl-area" value="${esc(v?.area)}" autocomplete="off"></label>
+      <label class="f"><span>来店日</span><input type="date" name="date" required value="${d.date||today()}"></label>
+      <label class="f"><span>利用額（円）</span><input type="number" name="amount" inputmode="numeric" min="0" step="1" value="${d.amount??''}" placeholder="0"></label>
     </div>
-    <label class="f"><span>キャスト（複数は「、」区切り）</span><input type="text" name="casts" value="${esc(v?v.casts.join('、'):'')}" autocomplete="off"></label>
+    <div style="margin:-6px 0 10px">${[1000,5000,10000].map(n=>`<button type="button" class="chip line" data-act="amt" data-n="${n}">＋${n.toLocaleString()}</button>`).join('')}<button type="button" class="chip line" data-act="amt" data-n="0">クリア</button></div>
+    <div class="grid2">
+      <label class="f"><span>店舗</span><input type="text" name="store" list="dl-store" value="${esc(d.store)}" autocomplete="off"></label>
+      <label class="f"><span>エリア</span><input type="text" name="area" list="dl-area" value="${esc(d.area)}" autocomplete="off"></label>
+    </div>
+    ${!v&&fav.length?`<div style="margin:-6px 0 10px"><span class="muted">よく行く店：</span>${fav.map(s=>`<button type="button" class="chip" data-act="pick-store" data-name="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:''}
+    <label class="f"><span>キャスト（複数は「、」区切り）</span><input type="text" name="casts" value="${esc((d.casts||[]).join('、'))}" autocomplete="off"></label>
     <div id="castchips" style="margin:-6px 0 10px"></div>
-    <label class="f"><span>当日の出来事・投稿ネタ</span><textarea name="episode" rows="5" placeholder="印象に残った会話、イベント、衣装、限定メニューなど">${esc(v?.episode)}</textarea></label>
-    <label class="f"><span>タグ（「、」区切り　例：生誕、イベント、新衣装）</span><input type="text" name="tags" value="${esc(v?v.tags.join('、'):'')}" autocomplete="off"></label>
+    <label class="f"><span>当日の出来事・投稿ネタ</span><textarea name="episode" rows="5" placeholder="印象に残った会話、イベント、衣装、限定メニューなど">${esc(d.episode)}</textarea></label>
+    <label class="f"><span>タグ（「、」区切り）</span><input type="text" name="tags" value="${esc((d.tags||[]).join('、'))}" autocomplete="off"></label>
+    <div id="tagchips" style="margin:-6px 0 10px"></div>
     <div class="f"><span>チェキ・写真</span>
       <div class="thumbs" id="fthumbs"></div>
-      <label class="btn sm" style="display:inline-flex;align-items:center;margin-top:8px">＋ 写真を追加<input type="file" id="fphoto" accept="image/*" multiple hidden></label>
+      <label class="btn sm" style="margin-top:8px">＋ 写真を追加<input type="file" id="fphoto" accept="image/*" multiple hidden></label>
     </div>
+    <label style="display:block;margin-bottom:12px"><input type="checkbox" name="skip" ${d.skip?'checked':''}> この来店は投稿しない（ネタ在庫から外す）</label>
     ${v?`<div class="card"><h2>この来店の投稿（${ps.length}件）</h2>
-      ${ps.map(p=>`<div class="row" style="margin-bottom:6px"><span class="badge ${p.status==='posted'?'ok':''}">${p.status==='posted'?'投稿済 反響'+fmt1(score(p)):'下書き'}</span><span class="grow muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.text)}</span><button type="button" class="btn sm" data-act="edit-post" data-id="${p.id}">開く</button></div>`).join('')}
+      ${ps.map(p=>`<div class="row" style="margin-bottom:6px"><span class="badge ${p.status==='posted'?'ok':''}">${p.status==='posted'?'投稿済 反響'+fmt1(score(p)):'下書き'}</span><span class="grow muted clip">${esc(p.text)}</span><button type="button" class="btn sm" data-act="edit-post" data-id="${p.id}">開く</button></div>`).join('')}
       <button type="button" class="btn sm" data-act="new-post" data-id="${v.id}">✍️ この来店で投稿を作る</button></div>
-    <button type="button" class="btn danger" data-act="del-visit" data-id="${v.id}">この来店記録を削除</button>`:''}
-  </div></form>`;
+    <div class="row"><button type="button" class="btn" data-act="dup-visit" data-id="${v.id}">複製して新規</button><button type="button" class="btn danger" data-act="del-visit" data-id="${v.id}">削除</button></div>`:''}
+  </div></form>`);
   drawFormThumbs();drawCastChips();
-  $('#dlg').showModal();
 }
 function drawFormThumbs(){$('#fthumbs').innerHTML=form.photos.map((p,i)=>`<div class="ph"><img src="${p.thumb}" data-act="view-form" data-i="${i}" alt=""><button type="button" class="x" data-act="rm-photo" data-i="${i}" aria-label="削除">✕</button></div>`).join('')}
 function drawCastChips(){
-  const f=$('#vform');if(!f)return;const store=f.store.value.trim(),cur=splitList(f.casts.value);
-  const known=uniq(visits.filter(v=>!store||v.store===store).flatMap(v=>v.casts)).filter(c=>!cur.includes(c)).slice(0,12);
-  $('#castchips').innerHTML=known.map(c=>`<button type="button" class="chip" data-act="add-cast" data-c="${esc(c)}">＋${esc(c)}</button>`).join('');
+  const f=$('#vform');if(!f)return;const store=f.store.value.trim(),cur=splitList(f.casts.value),ct=splitList(f.tags.value.replace(/[#＃]/g,''));
+  const freq=a=>{const m=new Map();a.forEach(x=>m.set(x,(m.get(x)||0)+1));return[...m].sort((x,y)=>y[1]-x[1]).map(x=>x[0])};
+  let pool=visits.filter(v=>v.store===store);if(!pool.length)pool=visits;
+  $('#castchips').innerHTML=freq(pool.flatMap(v=>v.casts)).filter(c=>!cur.includes(c)).slice(0,10).map(c=>`<button type="button" class="chip" data-act="add-cast" data-c="${esc(c)}">＋${esc(c)}</button>`).join('');
+  $('#tagchips').innerHTML=freq(visits.flatMap(v=>v.tags)).filter(c=>!ct.includes(c)).slice(0,10).map(c=>`<button type="button" class="chip line" data-act="add-tag" data-c="${esc(c)}">＋#${esc(c)}</button>`).join('');
 }
+function fillArea(f){if(f.area.value)return;const last=visits.filter(v=>v.store===f.store.value.trim()).sort((a,b)=>b.date.localeCompare(a.date))[0];if(last)f.area.value=last.area}
 async function saveVisit(f){
   const photos=[];
-  for(const p of form.photos){if(p.data){await dbPut('photos',{id:p.id,data:p.data})}photos.push({id:p.id,thumb:p.thumb})}
+  for(const p of form.photos){if(p.data)await dbPut('photos',{id:p.id,data:p.data});photos.push({id:p.id,thumb:p.thumb})}
   for(const id of form.removed)await dbDel('photos',id);
-  const v={id:form.id||uid(),date:f.date.value,amount:Math.max(0,Math.round(+f.amount.value||0)),store:f.store.value.trim(),area:f.area.value.trim(),
-    casts:splitList(f.casts.value),episode:f.episode.value.trim(),tags:splitList(f.tags.value.replace(/[#＃]/g,'')),photos};
+  const old=visits.find(x=>x.id===form.id)||{};
+  const v={...old,id:form.id||uid(),date:f.date.value,amount:Math.max(0,Math.round(+f.amount.value||0)),store:f.store.value.trim(),area:f.area.value.trim(),
+    casts:splitList(f.casts.value),episode:f.episode.value.trim(),tags:splitList(f.tags.value.replace(/[#＃]/g,'')),photos,skip:f.skip.checked};
   await dbPut('visits',v);
   const i=visits.findIndex(x=>x.id===v.id);if(i>=0)visits[i]=v;else visits.push(v);
-  $('#dlg').close();render();toast('保存しました');
+  if(form.planId){await dbDel('plans',form.planId);plans=plans.filter(p=>p.id!==form.planId)}
+  closeDlg(true);render();toast('保存しました');
+}
+
+/* ---------- キャスト・店舗の詳細 ---------- */
+function openEntity(kind,name){
+  const isC=kind==='cast',list=visits.filter(v=>isC?v.casts.includes(name):v.store===name).sort((a,b)=>b.date.localeCompare(a.date));
+  const o=agg(list,()=>['x'])[0]||{visits:0,spend:0,avg:0,per:null},n=note(kind+':'+name),ph=list.flatMap(v=>v.photos);
+  const sub=isC?agg(list,v=>v.store?[v.store]:[]):agg(list,v=>v.casts);sub.sort((a,b)=>b.visits-a.visits);
+  showDlg(`<div class="dhead"><button class="btn sm" data-act="close">閉じる</button><h2 class="clip">${n.oshi?'💗 ':''}${esc(name)}</h2><button class="btn sm" data-act="rename" data-kind="${kind}" data-name="${esc(name)}">名前変更</button></div>
+  <div class="dbody" data-ent="${kind}:${esc(name)}">
+    <div class="tiles">
+      <div class="tile"><div class="k">来店</div><div class="v">${o.visits}<small> 回</small></div><div class="d">${list.length?`最終 ${daysAgo(list[0].date)}日前`:''}</div></div>
+      <div class="tile"><div class="k">利用額</div><div class="v">${yen(o.spend)}</div><div class="d">平均 ${yen(o.avg)}</div></div>
+      <div class="tile"><div class="k">反響 / 来店</div><div class="v">${o.per==null?'—':fmt1(o.per)}</div><div class="d">${M.ev.length?`全体平均 ${fmt1(M.g)}`:'投稿の反響が未入力'}</div></div>
+      <div class="tile"><div class="k">${isC?'会った店舗':'会ったキャスト'}</div><div class="d" style="font-size:12px;color:var(--ink)">${sub.slice(0,4).map(s=>`${esc(s.key)}（${s.visits}）`).join('、')||'—'}</div></div>
+    </div>
+    <div class="card"><h2>メモ</h2>
+      ${isC?`<div class="grid2"><label class="f"><span>誕生日（月）</span><input type="number" min="1" max="12" inputmode="numeric" data-note="bm" value="${n.birthday?+n.birthday.slice(0,2):''}"></label><label class="f"><span>誕生日（日）</span><input type="number" min="1" max="31" inputmode="numeric" data-note="bd" value="${n.birthday?+n.birthday.slice(3):''}"></label></div>
+      <label style="display:block;margin-bottom:10px"><input type="checkbox" data-note="oshi" ${n.oshi?'checked':''}> 推しにする（💗表示）</label>`:''}
+      <textarea data-note="memo" rows="3" placeholder="${isC?'好きなもの、話した内容、呼び方など':'営業時間、料金、イベントの傾向など'}">${esc(n.memo)}</textarea>
+      <p class="muted" style="margin-top:4px">入力すると自動で保存されます。${isC?'誕生日は予定カレンダーと来店提案に反映されます。':''}</p></div>
+    <div class="row" style="margin-bottom:10px"><button class="btn" data-act="ent-list" data-kind="${kind}" data-name="${esc(name)}">来店一覧で見る</button><button class="btn" data-act="ent-plan" data-kind="${kind}" data-name="${esc(name)}">予定を入れる</button></div>
+    ${ph.length?`<div class="card"><h2>チェキ・写真（${ph.length}枚）</h2><div class="gal">${ph.slice(0,30).map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="" loading="lazy">`).join('')}</div></div>`:''}
+    <div class="card"><h2>来店の履歴</h2>${list.slice(0,20).map(v=>`<div class="todo tap" data-act="edit-visit" data-id="${v.id}"><div class="grow"><div class="hd"><span>${dlabel(v.date)} <span class="muted">${esc(isC?v.store:v.casts.join('、'))}</span></span><b class="num">${yen(v.amount)}</b></div>${v.episode?`<div class="muted clip">${esc(v.episode)}</div>`:''}</div></div>`).join('')||'<div class="muted">来店記録はありません。</div>'}${list.length>20?`<p class="muted">ほか ${list.length-20}件は「来店一覧で見る」から</p>`:''}</div>
+  </div>`);
+}
+async function renameEntity(kind,old){
+  const nw=(prompt('新しい名前（すべての記録に反映されます。既存の名前と同じにすると統合されます）',old)||'').trim();if(!nw||nw===old)return;
+  for(const v of visits){let ch=false;if(kind==='store'&&v.store===old){v.store=nw;ch=true}
+    if(kind==='cast'&&v.casts.includes(old)){v.casts=[...new Set(v.casts.map(c=>c===old?nw:c))];ch=true}
+    if(ch)await dbPut('visits',v)}
+  for(const p of plans){if(p[kind]===old){p[kind]=nw;await dbPut('plans',p)}}
+  const n=notes.get(kind+':'+old);if(n){notes.delete(n.id);await dbDel('notes',n.id);if(!notes.has(kind+':'+nw))await saveNote({...n,id:kind+':'+nw})}
+  if(ui.f[kind]===old)ui.f[kind]=nw;
+  render();openEntity(kind,nw);toast('名前を変更しました');
 }
 
 /* ---------- 投稿 ---------- */
+function xCount(s){let w=0;for(const c of s)w+=c.codePointAt(0)>0x10FF?2:1;return Math.ceil(w/2)}
 function renderPosts(){
-  const stock=visits.filter(v=>!(byVisit.get(v.id)||[]).length).sort((a,b)=>b.date.localeCompare(a.date));
-  const drafts=posts.filter(p=>p.status!=='posted'),done=posts.filter(p=>p.status==='posted').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const stock=visits.filter(isStock).sort((a,b)=>expected(b)-expected(a)||b.date.localeCompare(a.date));
+  const drafts=posts.filter(p=>p.status!=='posted'),done=posts.filter(p=>p.status==='posted').sort((a,b)=>(noMetrics(b)-noMetrics(a))||(b.date||'').localeCompare(a.date||''));
   const seg=[['stock',`ネタ在庫 ${stock.length}`],['draft',`下書き ${drafts.length}`],['posted',`投稿済 ${done.length}`]];
   let body='';
-  if(ui.pseg==='stock')body=stock.length?`<p class="muted" style="margin:0 2px 8px">まだ投稿に使っていない来店です。</p>`+stock.map(v=>visitCard(v,`<button class="btn sm pri" data-act="new-post" data-id="${v.id}">投稿を作る</button>`)).join(''):`<div class="empty">未投稿の来店はありません。</div>`;
+  if(ui.pseg==='stock')body=stock.length?`<p class="muted" style="margin:0 2px 8px">まだ投稿に使っていない来店です。${M.ev.length>=3?'過去の実績から期待反響が高い順に並べています。':''}</p>`+stock.map(v=>visitCard(v,`<span class="row">${M.ev.length>=3?`<span class="muted">期待 ${fmt1(expected(v))}</span>`:''}<button class="btn sm" data-act="skip" data-id="${v.id}">投稿しない</button><button class="btn sm pri" data-act="new-post" data-id="${v.id}">投稿を作る</button></span>`)).join(''):`<div class="empty">未投稿の来店はありません。</div>`;
   else{const list=ui.pseg==='draft'?drafts:done;
-    body=list.length?list.map(p=>{const v=visits.find(x=>x.id===p.visitId);const none=p.status==='posted'&&!(+p.likes||+p.reposts||+p.replies||+p.imps);
-      return `<div class="card visit" data-act="edit-post" data-id="${p.id}">
-      <div class="hd"><span class="muted">${p.date?dlabel(p.date):'日付未設定'}${v?`・${esc(v.store)}`:''}</span>${p.status==='posted'?(none?`<span class="badge warn">反響未入力</span>`:`<b class="num">反響 ${fmt1(score(p))}</b>`):''}</div>
+    body=list.length?list.map(p=>{const v=visits.find(x=>x.id===p.visitId);
+      return `<div class="card tap" data-act="edit-post" data-id="${p.id}">
+      <div class="hd"><span class="muted">${p.date?dlabel(p.date):'日付未設定'}${p.time?' '+p.time:''}${v?`・${esc(v.store)}`:''}</span>${p.status==='posted'?(noMetrics(p)?`<span class="badge warn">反響未入力</span>`:`<b class="num">反響 ${fmt1(score(p))}</b>`):''}</div>
       <div class="ep">${esc(p.text||'（本文なし）')}</div>
       ${p.status==='posted'?`<div class="muted num" style="margin-top:4px">♡ ${+p.likes||0}　🔁 ${+p.reposts||0}　💬 ${+p.replies||0}　👁 ${(+p.imps||0).toLocaleString()}</div>`:''}</div>`}).join(''):`<div class="empty">${ui.pseg==='draft'?'下書きはありません。':'投稿済みの記録はありません。'}</div>`}
   $('#main').innerHTML=`<div class="seg">${seg.map(([k,l])=>`<button data-act="pseg" data-k="${k}" class="${ui.pseg===k?'on':''}">${l}</button>`).join('')}</div>${body}
   <button class="btn pri fab" data-act="new-post">＋ 投稿を作る</button>`;
 }
 function openPost(id,visitId){
-  const p=id?posts.find(x=>x.id===id):{id:null,visitId:visitId||'',status:'draft',date:'',text:'',url:'',likes:'',reposts:'',replies:'',imps:''};
+  const p=id?posts.find(x=>x.id===id):{id:null,visitId:visitId||'',status:'draft',date:'',time:'',text:'',url:'',likes:'',reposts:'',replies:'',imps:''};
   const vs=[...visits].sort((a,b)=>b.date.localeCompare(a.date));
-  const v=visits.find(x=>x.id===p.visitId);
-  $('#dlg').innerHTML=`<form id="pform" data-id="${p.id||''}"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${id?'投稿を編集':'投稿を作る'}</h2><button class="btn pri sm">保存</button></div>
+  showDlg(`<form id="pform" data-id="${p.id||''}"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${id?'投稿を編集':'投稿を作る'}</h2><button class="btn pri sm">保存</button></div>
   <div class="dbody">
-    <label class="f"><span>元になる来店</span><select name="visitId"><option value="">（紐づけなし）</option>${vs.map(x=>`<option value="${x.id}" ${x.id===p.visitId?'selected':''}>${x.date}　${esc(x.store)}</option>`).join('')}</select></label>
+    <label class="f"><span>元になる来店</span><select name="visitId"><option value="">（紐づけなし）</option>${vs.map(x=>`<option value="${x.id}" ${x.id===p.visitId?'selected':''}>${x.date}　${esc(x.store)}${isStock(x)?'　●未投稿':''}</option>`).join('')}</select></label>
     <div id="pvisit"></div>
     <label class="f"><span>本文　<b id="pcount" class="num"></b></span><textarea name="text" rows="7">${esc(p.text)}</textarea></label>
-    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="tpl">来店メモを挿入</button><button type="button" class="btn sm" data-act="copy">コピー</button>${navigator.share?`<button type="button" class="btn sm" data-act="share">共有</button>`:''}</div>
+    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="tpl">来店メモを挿入</button><button type="button" class="btn sm" data-act="copy">コピー</button>${navigator.share?`<button type="button" class="btn sm" data-act="share">共有</button>`:''}<button type="button" class="btn sm" data-act="xpost">Xで開く</button><button type="button" class="btn sm pri" data-act="mark-posted">投稿済みにする</button></div>
     <div class="grid2">
       <label class="f"><span>状態</span><select name="status"><option value="draft" ${p.status!=='posted'?'selected':''}>下書き</option><option value="posted" ${p.status==='posted'?'selected':''}>投稿済</option></select></label>
       <label class="f"><span>投稿日</span><input type="date" name="date" value="${p.date||''}"></label>
+      <label class="f"><span>投稿時刻（任意）</span><input type="time" name="time" value="${p.time||''}"></label>
+      <label class="f"><span>投稿URL</span><input type="url" name="url" value="${esc(p.url)}" placeholder="https://"></label>
     </div>
-    <label class="f"><span>投稿URL</span><input type="url" name="url" value="${esc(p.url)}" placeholder="https://"></label>
+    ${p.url?`<a class="btn sm" href="${esc(p.url)}" target="_blank" rel="noopener" style="margin-bottom:12px">投稿を開いて反響を確認 ↗</a>`:''}
     <div class="card"><h2>反響（投稿後に入力・いつでも更新可）</h2><div class="grid2">
       <label class="f"><span>♡ いいね</span><input type="number" name="likes" inputmode="numeric" min="0" value="${p.likes??''}"></label>
       <label class="f"><span>🔁 リポスト</span><input type="number" name="reposts" inputmode="numeric" min="0" value="${p.reposts??''}"></label>
@@ -318,40 +473,43 @@ function openPost(id,visitId){
       <label class="f"><span>👁 インプレッション</span><input type="number" name="imps" inputmode="numeric" min="0" value="${p.imps??''}"></label>
     </div></div>
     ${id?`<button type="button" class="btn danger" data-act="del-post" data-id="${id}">この投稿を削除</button>`:''}
-  </div></form>`;
+  </div></form>`);
   drawPostVisit();countPost();
-  if(!$('#dlg').open)$('#dlg').showModal();
 }
 function drawPostVisit(){const f=$('#pform');const v=visits.find(x=>x.id===f.visitId.value);
+  const used=v?(byVisit.get(v.id)||[]).filter(p=>p.id!==f.dataset.id):[];
   $('#pvisit').innerHTML=v?`<div class="card"><div class="muted">${dlabel(v.date)}・${esc(v.store)} ${esc(v.area)}・${yen(v.amount)}</div>
     <div>${v.casts.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>
     ${v.episode?`<div style="font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.episode)}</div>`:''}
-    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="">`).join('')}</div>`:''}</div>`:''}
-function countPost(){const f=$('#pform');if(f)$('#pcount').textContent=[...f.text.value].length+'文字'}
+    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="">`).join('')}</div>`:''}
+    ${used.length?`<div class="muted" style="margin-top:6px">※この来店はすでに${used.length}件の投稿に使っています。</div>`:''}</div>`:''}
+function countPost(){const f=$('#pform');if(f)$('#pcount').textContent=`${[...f.text.value].length}文字（X換算 ${xCount(f.text.value)}/140）`}
 async function savePost(f){
   const n=k=>f[k].value===''?'':Math.max(0,Math.round(+f[k].value||0));
-  const p={id:f.dataset.id||uid(),visitId:f.visitId.value||'',status:f.status.value,date:f.date.value||(f.status.value==='posted'?today():''),text:f.text.value,url:f.url.value.trim(),likes:n('likes'),reposts:n('reposts'),replies:n('replies'),imps:n('imps')};
+  const p={id:f.dataset.id||uid(),visitId:f.visitId.value||'',status:f.status.value,date:f.date.value||(f.status.value==='posted'?today():''),time:f.time.value,text:f.text.value,url:f.url.value.trim(),likes:n('likes'),reposts:n('reposts'),replies:n('replies'),imps:n('imps')};
   await dbPut('posts',p);const i=posts.findIndex(x=>x.id===p.id);if(i>=0)posts[i]=p;else posts.push(p);
-  $('#dlg').close();if(ui.tab==='posts')ui.pseg=p.status==='posted'?'posted':'draft';render();toast('保存しました');
+  closeDlg(true);if(ui.tab==='posts')ui.pseg=p.status==='posted'?'posted':'draft';render();toast('保存しました');
 }
 
 /* ---------- 分析 ---------- */
 function monthsList(n){const out=[],d=new Date();d.setDate(1);
-  let first=visits.length?visits.reduce((a,v)=>v.date<a?v.date:a,'9999').slice(0,7):ymd(d).slice(0,7);
+  const first=visits.length?visits.reduce((a,v)=>v.date<a?v.date:a,'9999').slice(0,7):ymd(d).slice(0,7);
   for(let i=0;i<(n||600);i++){const k=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;out.unshift(k);if(!n&&k<=first)break;d.setMonth(d.getMonth()-1)}
   return n?out:out.slice(-36)}
 function agg(list,keyFn){const m=new Map();
   for(const v of list){const r=react(v);for(const k of keyFn(v)){if(!m.has(k))m.set(k,{key:k,visits:0,spend:0,posts:0,react:0,ev:0,evSpend:0});
     const o=m.get(k);o.visits++;o.spend+=v.amount;o.posts+=r.n;o.react+=r.s;if(r.n){o.ev++;o.evSpend+=v.amount}}}
   return [...m.values()].map(o=>({...o,avg:o.spend/o.visits,per:o.ev?o.react/o.ev:null,eff:o.evSpend?o.react/o.evSpend*1000:null}))}
-const DIMS={store:['店舗',v=>[v.store||'（未入力）']],cast:['キャスト',v=>v.casts.length?v.casts:['（未入力）']],area:['エリア',v=>[v.area||'（未入力）']],wd:['曜日',v=>[WD[wdOf(v.date)]+'曜']]};
+const band=t=>{if(!t)return'時刻未入力';const h=+t.slice(0,2);return h<5?'深夜（0–5時）':h<11?'朝（5–11時）':h<17?'昼（11–17時）':h<21?'夜（17–21時）':'夜遅く（21–24時）'};
+const DIMS={store:['店舗',v=>[v.store||'（未入力）']],cast:['キャスト',v=>v.casts.length?v.casts:['（未入力）']],area:['エリア',v=>[v.area||'（未入力）']],tag:['タグ',v=>v.tags.length?v.tags:['（タグなし）']],wd:['来店曜日',v=>[WD[wdOf(v.date)]+'曜']],
+  pwd:['投稿曜日',p=>[WD[wdOf(p.date)]+'曜'],1],ptime:['投稿時間帯',p=>[band(p.time)],1]};
 function barChart(title,rows,f){
   const W=340,H=150,L=6,B=20,T=8,max=Math.max(1,...rows.map(r=>r.value)),bw=(W-L*2)/rows.length,ph=H-B-T;
   const step=Math.ceil(rows.length/12);
   const bars=rows.map((r,i)=>{const h=Math.round(r.value/max*ph),x=L+i*bw,w=Math.max(2,Math.min(22,bw-2)),bx=x+(bw-w)/2,y=T+ph-h;const rr=Math.min(4,h,w/2);
     const d=h>0?`M${bx},${T+ph}V${y+rr}Q${bx},${y} ${bx+rr},${y}H${bx+w-rr}Q${bx+w},${y} ${bx+w},${y+rr}V${T+ph}Z`:'';
     return `<g class="b" data-i="${i}">${d?`<path d="${d}" fill="var(--bar)"/>`:''}<rect x="${x}" y="0" width="${bw}" height="${H}" fill="transparent"/>
-    ${i%step===0||i===rows.length-1&&step===1?`<text x="${x+bw/2}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--ink2)">${r.short}</text>`:''}</g>`}).join('');
+    ${i%step===0?`<text x="${x+bw/2}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--ink2)">${r.short}</text>`:''}</g>`}).join('');
   const last=rows[rows.length-1];
   return `<div class="card chart" data-chart='${esc(JSON.stringify(rows.map(r=>[r.label,f(r.value)])))}'><h2>${title}</h2>
     <div class="read"><b>${f(last.value)}</b>　${last.label}</div>
@@ -362,19 +520,23 @@ function renderStats(){
   const ms=monthsList(ui.range==='all'?0:+ui.range),from=ms[0];
   const list=visits.filter(v=>v.date.slice(0,7)>=from),A=agg(list,()=>['all'])[0]||{visits:0,spend:0,posts:0,react:0,per:null,eff:null};
   const per=agg(list,v=>[v.date.slice(0,7)]),pm=new Map(per.map(o=>[o.key,o]));
-  const rows=k=>ms.map(m=>({label:`${m.slice(0,4)}年${+m.slice(5)}月`,short:`${+m.slice(5)}月`,value:(pm.get(m)||{})[k]||0}));
-  const [dl,fn]=DIMS[ui.dim];let t=agg(list,fn);const ts=ui.tsort;
+  const rows=k=>ms.map(m=>({label:ymLabel(m),short:`${+m.slice(5)}月`,value:(pm.get(m)||{})[k]||0}));
+  const [dl,fn,isPost]=DIMS[ui.dim];let t,cols;const dash=x=>x==null?'<span class="muted">—</span>':fmt1(x);
+  if(isPost){const m=new Map();for(const p of posts){if(p.status!=='posted'||!p.date||p.date.slice(0,7)<from)continue;for(const k of fn(p)){const o=m.get(k)||{key:k,posts:0,react:0,imps:0};o.posts++;o.react+=score(p);o.imps+=+p.imps||0;m.set(k,o)}}
+    t=[...m.values()].map(o=>({...o,per:o.react/o.posts,impavg:o.imps/o.posts}));cols=[['key',dl],['posts','投稿'],['react','反響計'],['per','反響/投稿'],['impavg','平均インプ']];
+  }else{t=agg(list,fn);cols=[['key',dl],['visits','来店'],['spend','利用額'],['avg','平均単価'],['posts','投稿'],['react','反響計'],['per','反響/来店'],['eff','反響/千円']]}
+  const ts=cols.some(c=>c[0]===ui.tsort)?ui.tsort:cols[1][0];
   t.sort((a,b)=>ts==='key'?a.key.localeCompare(b.key,'ja'):(b[ts]??-1)-(a[ts]??-1));
-  if(ui.dim==='wd'&&ts==='key')t.sort((a,b)=>WD.indexOf(a.key[0])-WD.indexOf(b.key[0]));
-  const cols=[['key',dl],['visits','来店'],['spend','利用額'],['avg','平均単価'],['posts','投稿'],['react','反響計'],['per','反響/来店'],['eff','反響/千円']];
-  const dash=x=>x==null?'<span class="muted">—</span>':fmt1(x);
+  if((ui.dim==='wd'||ui.dim==='pwd')&&ts==='key')t.sort((a,b)=>WD.indexOf(a.key[0])-WD.indexOf(b.key[0]));
+  const cell=(o,k)=>k==='key'?esc(o.key):['spend','avg'].includes(k)?yen(o[k]):['visits','posts'].includes(k)?o[k]:k==='impavg'?Math.round(o[k]).toLocaleString():dash(o[k]);
+  const ent={store:'store',cast:'cast'}[ui.dim];
   $('#main').innerHTML=`
   <div class="seg">${[['3','直近3ヶ月'],['6','6ヶ月'],['12','12ヶ月'],['all','全期間']].map(([k,l])=>`<button data-act="range" data-k="${k}" class="${ui.range===k?'on':''}">${l}</button>`).join('')}</div>
-  <div class="tiles">
-    <div class="tile"><div class="k">来店回数</div><div class="v">${A.visits}<small> 回</small></div></div>
-    <div class="tile"><div class="k">利用額</div><div class="v">${yen(A.spend)}</div></div>
-    <div class="tile"><div class="k">投稿数（投稿済）</div><div class="v">${A.posts}<small> 件</small></div></div>
-    <div class="tile"><div class="k">来店あたり反響</div><div class="v">${A.per==null?'—':fmt1(A.per)}</div></div>
+  <div class="tiles t4">
+    <div class="tile"><div class="k">来店回数</div><div class="v">${A.visits}<small> 回</small></div><div class="d">月平均 ${fmt1(A.visits/ms.length)}回</div></div>
+    <div class="tile"><div class="k">利用額</div><div class="v">${yen(A.spend)}</div><div class="d">月平均 ${yen(A.spend/ms.length)}</div></div>
+    <div class="tile"><div class="k">投稿数（投稿済）</div><div class="v">${A.posts}<small> 件</small></div><div class="d">来店の${A.visits?Math.round(list.filter(v=>react(v).n).length/A.visits*100):0}%を投稿化</div></div>
+    <div class="tile"><div class="k">来店あたり反響</div><div class="v">${A.per==null?'—':fmt1(A.per)}</div><div class="d">千円あたり ${A.eff==null?'—':fmt1(A.eff)}</div></div>
   </div>
   ${barChart('月別 来店回数',rows('visits'),v=>v+'回')}
   ${barChart('月別 利用額',rows('spend'),yen)}
@@ -382,108 +544,174 @@ function renderStats(){
   <div class="card"><h2>内訳</h2>
     <div class="seg">${Object.entries(DIMS).map(([k,[l]])=>`<button data-act="dim" data-k="${k}" class="${ui.dim===k?'on':''}">${l}</button>`).join('')}</div>
     <div class="tblwrap"><table><thead><tr>${cols.map(([k,l])=>`<th data-act="tsort" data-k="${k}" class="${ts===k?'on':''}">${l}${ts===k?' ▾':''}</th>`).join('')}</tr></thead>
-    <tbody>${t.map(o=>`<tr><td>${esc(o.key)}</td><td class="num">${o.visits}</td><td class="num">${yen(o.spend)}</td><td class="num">${yen(o.avg)}</td><td class="num">${o.posts}</td><td class="num">${fmt1(o.react)}</td><td class="num">${dash(o.per)}</td><td class="num">${dash(o.eff)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="muted" style="margin-top:8px">反響スコア＝いいね×${conf.w.likes}＋リポスト×${conf.w.reposts}＋返信×${conf.w.replies}${conf.w.imps?`＋インプレッション×${conf.w.imps}`:''}（設定で変更可）。「反響/来店」「反響/千円」は投稿済みの来店だけで計算し、未投稿の来店は0点扱いにしません。</p>
+    <tbody>${t.map(o=>`<tr ${ent&&!o.key.startsWith('（')?`class="tap" data-act="ent" data-kind="${ent}" data-name="${esc(o.key)}"`:''}>${cols.map(([k])=>`<td class="num">${cell(o,k)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="muted">データがありません</td></tr>`}</tbody></table></div>
+    <p class="muted" style="margin-top:8px">反響スコア＝いいね×${conf.w.likes}＋リポスト×${conf.w.reposts}＋返信×${conf.w.replies}${conf.w.imps?`＋インプレッション×${conf.w.imps}`:''}（設定で変更可）。「反響/来店」「反響/千円」は投稿済みの来店だけで計算し、未投稿の来店は0点扱いにしません。${ent?'行をタップすると詳細を開きます。':''}</p>
   </div>`;
 }
 function chartHover(e){const g=e.target.closest('g.b');if(!g)return;const c=g.closest('.chart'),d=JSON.parse(c.dataset.chart)[+g.dataset.i];
   $('.read',c).innerHTML=`<b>${esc(d[1])}</b>　${esc(d[0])}`;c.querySelectorAll('g.b path').forEach(p=>p.style.opacity=p.parentNode===g?1:.45)}
 $('#main').addEventListener('pointerover',chartHover);$('#main').addEventListener('pointerdown',chartHover);
 
-/* ---------- 提案 ---------- */
-const K=2; // 少ない実績を全体平均に寄せる強さ
+/* ---------- 予定・提案 ---------- */
+function castStore(c){const m=new Map();visits.filter(v=>v.casts.includes(c)&&v.store).forEach(v=>m.set(v.store,(m.get(v.store)||0)+1));return[...m].sort((a,b)=>b[1]-a[1])[0]?.[0]||''}
+// 手入力のイベント＋キャスト誕生日
+function eventsIn(ym){const out=plans.filter(p=>p.type==='event'&&p.date.startsWith(ym)).map(p=>({...p}));
+  for(const n of notes.values()){if(!n.id.startsWith('cast:')||!n.birthday||n.birthday.slice(0,2)!==ym.slice(5))continue;const c=n.id.slice(5);
+    const date=`${ym}-${n.birthday.slice(3)}`;if(new Date(date+'T00:00:00').getMonth()+1!==+ym.slice(5))continue;
+    out.push({id:'b:'+c,type:'event',auto:true,date,title:`${c} 誕生日`,cast:c,store:castStore(c)})}
+  return out}
 function buildPlan(){
-  const ev=visits.map(v=>({v,r:react(v)})).filter(x=>x.r.n);
-  if(ev.length<3)return{short:ev.length};
-  const g=ev.reduce((a,x)=>a+x.r.s,0)/ev.length;
-  const sh=(sum,n)=>(sum+K*g)/(n+K);
-  // 直近3ヶ月（当月除く）の実績
+  if(M.ev.length<3)return{short:M.ev.length};
   const pm=monthsList(4).slice(0,3),past=visits.filter(v=>pm.includes(v.date.slice(0,7)));
-  const autoN=Math.max(1,Math.round(past.length/3)),autoB=Math.round(past.reduce((a,v)=>a+v.amount,0)/3/1000)*1000;
-  const N=+conf.target||autoN,budget=+conf.budget||autoB||Infinity;
+  const autoN=Math.max(1,Math.round(past.length/3)),autoB=Math.round(sum(past,v=>v.amount)/3/1000)*1000;
+  const N=+conf.target||autoN,budget=+conf.budget||autoB||Infinity,ym=ui.planMonth,td=today();
+  const avgCost=sum(visits,v=>v.amount)/visits.length;
   const stores=agg(visits.filter(v=>v.store),v=>[v.store]).map(o=>{
-    const vs=visits.filter(v=>v.store===o.key),last=vs.reduce((a,v)=>v.date>a?v.date:a,'');
-    const casts=agg(vs,v=>v.casts).map(c=>({key:c.key,s:sh(c.react,c.ev),ev:c.ev})).sort((a,b)=>b.s-a.s);
-    const area=vs.sort((a,b)=>b.date.localeCompare(a.date))[0].area;
-    return{...o,s:sh(o.react,o.ev),cost:o.avg,last,area,cast:casts[0]}});
-  if(!stores.length)return{short:ev.length};
-  const avgCost=visits.reduce((a,v)=>a+v.amount,0)/visits.length,tight=budget<N*avgCost;
-  const picks=[],cnt=new Map();let rest=budget;
-  const explore=N>=3?stores.filter(s=>s.ev<2).sort((a,b)=>a.visits-b.visits||a.last.localeCompare(b.last))[0]:null;
-  for(let i=0;i<N;i++){
-    let best=null,bv=-1;
-    if(explore&&i===N-1&&explore.cost<=rest&&!cnt.get(explore.key)){best=explore;best._ex=true}
+    const vs=visits.filter(v=>v.store===o.key).sort((a,b)=>b.date.localeCompare(a.date));
+    const cast=agg(vs,v=>v.casts).map(c=>({key:c.key,s:M.sh(c.react,c.ev)*(note('cast:'+c.key).oshi?1.1:1)})).sort((a,b)=>b.s-a.s)[0];
+    return{...o,s:M.est(M.store,o.key),cost:o.avg,last:vs[0].date,area:vs[0].area,cast:cast&&cast.key}});
+  if(!stores.length)return{short:M.ev.length};
+  const find=name=>stores.find(s=>s.key===name)||{key:name,s:M.g,cost:avgCost,ev:0,visits:0,per:null,area:'',cast:''};
+  // すでに決まっている分（当月の来店実績・登録済みの予定）
+  const done=visits.filter(v=>v.date.startsWith(ym)),fixed=plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym)&&p.date>=td);
+  let slots=N-done.length-fixed.length,rest=budget-sum(done,v=>v.amount)-sum(fixed,p=>+p.est||0);
+  const taken=new Set([...done,...fixed].map(x=>x.date)),picks=[],cnt=new Map();
+  [...done.map(v=>v.store),...fixed.map(p=>p.store)].forEach(s=>cnt.set(s,(cnt.get(s)||0)+1));
+  const add=(s,o)=>{picks.push({s,...o});cnt.set(s.key,(cnt.get(s.key)||0)+1);rest-=s.cost;slots--};
+  // 1) イベント・誕生日を優先
+  for(const e of eventsIn(ym).sort((a,b)=>a.date.localeCompare(b.date))){if(slots<=0)break;if(!e.store||e.date<td||taken.has(e.date))continue;const s=find(e.store);if(s.cost>rest)continue;
+    taken.add(e.date);add(s,{date:e.date,why:'event',title:e.title,cast:e.cast||s.cast})}
+  // 2) 残りを期待反響で選ぶ
+  const tight=budget<N*avgCost,greedy=[];
+  const explore=slots>=3?stores.filter(s=>s.ev<2&&!cnt.get(s.key)).sort((a,b)=>a.visits-b.visits||a.last.localeCompare(b.last))[0]:null;
+  while(slots>0){let best=null,bv=-1,ex=false;
+    if(explore&&slots===1&&explore.cost<=rest&&!cnt.get(explore.key)){best=explore;ex=true}
     else for(const s of stores){if(s.cost>rest)continue;const val=s.s*Math.pow(.75,cnt.get(s.key)||0)/(tight?Math.max(s.cost,1):1);if(val>bv){bv=val;best=s}}
-    if(!best)break;
-    picks.push({s:best,ex:!!best._ex});delete best._ex;cnt.set(best.key,(cnt.get(best.key)||0)+1);rest-=best.cost;
-  }
-  // 曜日スコア
-  const wd=Array.from({length:7},()=>({sum:0,n:0}));ev.forEach(x=>{const w=wd[wdOf(x.v.date)];w.sum+=x.r.s;w.n++});
-  const wds=wd.map(w=>sh(w.sum,w.n));
-  const [y,m]=ui.planMonth.split('-').map(Number),days=new Date(y,m,0).getDate(),td=today();
-  const avail=[];for(let d=1;d<=days;d++){const s=`${y}-${pad(m)}-${pad(d)}`;if(s>=td)avail.push(s)}
-  const n=Math.min(picks.length,avail.length),dates=[];
-  for(let i=0;i<n;i++){const seg=avail.slice(Math.floor(i*avail.length/n),Math.floor((i+1)*avail.length/n));
-    dates.push(seg.reduce((a,s)=>wds[wdOf(s)]>wds[wdOf(a)]?s:a,seg[0]))}
-  picks.length=n;picks.sort((a,b)=>b.s.s-a.s.s);
-  // 期待値の高い店を、スコアの高い曜日の日に割り当て
-  const order=[...dates].sort((a,b)=>wds[wdOf(b)]-wds[wdOf(a)]);
-  picks.forEach((p,i)=>p.date=order[i]);picks.sort((a,b)=>a.date.localeCompare(b.date));
-  return{picks,N,budget,autoN,autoB,g,tight,stores:stores.sort((a,b)=>b.s-a.s),wds,wd,evN:ev.length,
-    cost:picks.reduce((a,p)=>a+p.s.cost,0),exp:picks.reduce((a,p)=>a+p.s.s,0)};
+    if(!best)break;const o={why:ex?'explore':'score',cast:best.cast};add(best,o);greedy.push(picks[picks.length-1])}
+  // 3) 日付の割り当て（月内に分散・反響の良い曜日を優先・行けない曜日は除外）
+  const wds=WD.map((_,i)=>M.est(M.wd,i)),[y,m]=ym.split('-').map(Number),days=new Date(y,m,0).getDate(),avail=[];
+  for(let d=1;d<=days;d++){const s=`${ym}-${pad(d)}`;if(s>=td&&!taken.has(s)&&!conf.ngWd.includes(wdOf(s)))avail.push(s)}
+  const n=Math.min(greedy.length,avail.length),dates=[];
+  for(let i=0;i<n;i++){const sg=avail.slice(Math.floor(i*avail.length/n),Math.floor((i+1)*avail.length/n));dates.push(sg.reduce((a,s)=>wds[wdOf(s)]>wds[wdOf(a)]?s:a,sg[0]))}
+  const drop=greedy.splice(n);drop.forEach(p=>picks.splice(picks.indexOf(p),1));
+  greedy.sort((a,b)=>b.s.s-a.s.s);dates.sort((a,b)=>wds[wdOf(b)]-wds[wdOf(a)]);greedy.forEach((p,i)=>p.date=dates[i]);
+  picks.sort((a,b)=>a.date.localeCompare(b.date));
+  return{picks,N,budget,autoN,autoB,tight,done:done.length,fixed:fixed.length,stores:stores.sort((a,b)=>b.s-a.s),wds,
+    cost:sum(picks,p=>p.s.cost),exp:sum(picks,p=>p.s.s)};
 }
+let lastPlan=null;
+async function addPlan(p){const pl={id:uid(),type:'plan',date:p.date,store:p.s.key,area:p.s.area,cast:p.cast||'',est:Math.round(p.s.cost),memo:p.title||''};plans.push(pl);await dbPut('plans',pl)}
 function renderPlan(){
-  if(!ui.planMonth){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+1);ui.planMonth=ymd(d).slice(0,7)}
-  const P=buildPlan();
-  const head=`<div class="card"><h2>条件</h2><div class="grid2">
-    <label class="f"><span>対象月</span><input type="month" id="pl-month" value="${ui.planMonth}"></label>
-    <label class="f"><span>来店回数（空欄＝直近3ヶ月平均${P.autoN!=null?` ${P.autoN}回`:''}）</span><input type="number" id="pl-n" min="1" inputmode="numeric" value="${esc(conf.target)}"></label>
-    <label class="f" style="grid-column:1/-1"><span>月の予算・円（空欄＝直近3ヶ月平均${P.autoB?` ${yen(P.autoB)}`:''}）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
-  </div></div>`;
-  if(P.short!=null){$('#main').innerHTML=head+`<div class="empty">提案にはデータがまだ足りません。<br>「投稿済」の投稿が紐づいた来店が <b>3件以上</b> 必要です（現在 ${P.short}件）。<br>投稿タブで反響（いいね等）を入力してください。</div>`;return}
-  const top=P.wds.map((s,i)=>({i,s,n:P.wd[i].n})).filter(x=>x.n).sort((a,b)=>b.s-a.s).slice(0,2).map(x=>WD[x.i]+'曜').join('・');
-  $('#main').innerHTML=head+`
-  <div class="tiles" style="grid-template-columns:repeat(3,1fr)">
-    <div class="tile"><div class="k">提案回数</div><div class="v">${P.picks.length}<small> 回</small></div></div>
-    <div class="tile"><div class="k">想定利用額</div><div class="v" style="font-size:17px">${yen(P.cost)}</div></div>
-    <div class="tile"><div class="k">期待反響</div><div class="v">${fmt1(P.exp)}</div></div>
+  const ym=ui.cal,[y,m]=ym.split('-').map(Number),first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),td=today();
+  const evs=eventsIn(ym),cells=[];
+  for(let i=0;i<first;i++)cells.push('<span></span>');
+  for(let d=1;d<=days;d++){const s=`${ym}-${pad(d)}`,nv=visits.filter(v=>v.date===s).length,np=plans.filter(p=>p.type==='plan'&&p.date===s).length,ne=evs.filter(e=>e.date===s).length;
+    cells.push(`<button data-act="day" data-d="${s}" class="${s===td?'today ':''}${s===ui.day?'sel':''}" aria-label="${d}日">${d}<small>${'●'.repeat(Math.min(nv,3))}${'○'.repeat(Math.min(np,2))}${ne?'★':''}</small></button>`)}
+  const d=ui.day,dv=visits.filter(v=>v.date===d),dp=plans.filter(p=>p.type==='plan'&&p.date===d),de=eventsIn(d.slice(0,7)).filter(e=>e.date===d);
+  const up=upcoming().slice(0,8),ms=monthStat(ym),pl=plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym));
+  const P=ui.showPlan?buildPlan():null;lastPlan=P;
+  $('#main').innerHTML=`
+  <div class="card">
+    <div class="row between" style="margin-bottom:8px"><button class="btn sm" data-act="cal" data-n="-1" aria-label="前の月">‹</button><b>${ymLabel(ym)}</b><button class="btn sm" data-act="cal" data-n="1" aria-label="次の月">›</button></div>
+    <div class="cal">${WD.map(w=>`<span class="w">${w}</span>`).join('')}${cells.join('')}</div>
+    <p class="muted" style="margin-top:8px">● 来店　○ 予定　★ イベント・誕生日　／　来店 ${ms.n}回 ${yen(ms.spend)}・予定 ${pl.length}件（想定 ${yen(sum(pl,p=>+p.est||0))}）</p>
   </div>
-  ${P.picks.length<P.N?`<p class="muted" style="margin:0 2px 10px">※予算または残り日数の都合で、希望${P.N}回のうち${P.picks.length}回分を提案しています。</p>`:''}
-  ${P.picks.map(p=>{const s=p.s,[,mm,dd]=p.date.split('-');return `<div class="card plan"><div class="d">${+mm}/${+dd}<small>${WD[wdOf(p.date)]}曜</small></div><div class="grow">
-    <div class="store">${esc(s.key)} <span class="muted">${esc(s.area)}</span> ${p.ex?'<span class="badge warn">お試し枠</span>':''}</div>
-    ${s.cast&&s.cast.key!=='（未入力）'?`<div><span class="chip">${esc(s.cast.key)}</span></div>`:''}
-    <div class="muted">想定 ${yen(s.cost)}・期待反響 ${fmt1(s.s)}<br>${p.ex?`投稿済みの来店が${s.ev}回とデータが少ないため、傾向をつかむための枠です。`:`根拠：投稿済みの来店${s.ev}回の平均反響 ${fmt1(s.per??0)}、平均利用額 ${yen(s.cost)}`}</div></div></div>`}).join('')}
+  <div class="card"><div class="hd"><h2>${dlabel(d)}</h2><span class="row"><button class="btn sm" data-act="new-plan" data-d="${d}">＋予定</button><button class="btn sm" data-act="new-event" data-d="${d}">＋イベント</button>${d<=td?`<button class="btn sm pri" data-act="new-visit" data-d="${d}">＋記録</button>`:''}</span></div>
+    ${de.map(e=>`<div class="todo"><div class="grow">★ <b>${esc(e.title)}</b> <span class="muted">${esc(e.store)}</span></div>${e.auto?'':`<button class="btn sm" data-act="del-plan" data-id="${e.id}">削除</button>`}</div>`).join('')}
+    ${dp.map(p=>`<div class="todo"><div class="grow">○ <b>${esc(p.store)}</b> <span class="muted">${esc(p.cast)}${p.est?'・想定 '+yen(p.est):''}${p.memo?'・'+esc(p.memo):''}</span></div>${d<=td?`<button class="btn sm pri" data-act="plan-rec" data-id="${p.id}">記録する</button>`:''}<button class="btn sm" data-act="del-plan" data-id="${p.id}">取消</button></div>`).join('')}
+    ${dv.map(v=>`<div class="todo tap" data-act="edit-visit" data-id="${v.id}"><div class="grow">● <b>${esc(v.store)}</b> <span class="muted">${esc(v.casts.join('、'))}・${yen(v.amount)}</span></div></div>`).join('')}
+    ${de.length+dp.length+dv.length?'':'<div class="muted">この日の記録・予定はありません。</div>'}</div>
+  ${up.length?`<div class="card"><h2>これからの予定</h2>${up.map(p=>`<div class="todo tap" data-act="day" data-d="${p.date}"><div class="grow">${mdlabel(p.date)}　<b>${esc(p.type==='event'?'★ '+p.title:p.store)}</b> <span class="muted">${esc(p.type==='event'?p.store:p.cast)}</span></div></div>`).join('')}</div>`:''}
+  <div class="card"><h2>来店スケジュールの提案</h2>
+    <div class="grid2">
+      <label class="f"><span>対象月</span><input type="month" id="pl-month" value="${ui.planMonth}"></label>
+      <label class="f"><span>月の来店回数（空欄＝自動）</span><input type="number" id="pl-n" min="1" inputmode="numeric" value="${esc(conf.target)}"></label>
+      <label class="f" style="grid-column:1/-1"><span>月の予算・円（空欄＝直近3ヶ月の平均）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
+    </div>
+    <div class="f"><span>行けない曜日</span>${WD.map((w,i)=>`<button class="chip line ${conf.ngWd.includes(i)?'on':''}" data-act="ng" data-i="${i}">${w}</button>`).join('')}</div>
+    <button class="btn pri" data-act="suggest" style="width:100%">${P?'提案を更新':'提案を作る'}</button>
+  </div>
+  <div id="proposal">${P?proposalHtml(P):''}</div>`;
+}
+function proposalHtml(P){
+  if(P.short!=null)return `<div class="empty">提案にはデータがまだ足りません。<br>「投稿済」の投稿が紐づいた来店が <b>3件以上</b> 必要です（現在 ${P.short}件）。<br>投稿タブで反響（いいね等）を入力してください。</div>`;
+  const top=P.wds.map((s,i)=>({i,s})).filter(x=>M.wd.has(x.i)&&!conf.ngWd.includes(x.i)).sort((a,b)=>b.s-a.s).slice(0,2).map(x=>WD[x.i]+'曜').join('・');
+  const need=P.N-P.done-P.fixed;
+  return `<div class="tiles t3">
+    <div class="tile"><div class="k">提案</div><div class="v">${P.picks.length}<small> 回</small></div><div class="d">目標${P.N}回（済${P.done}・予定${P.fixed}）</div></div>
+    <div class="tile"><div class="k">想定利用額</div><div class="v" style="font-size:16px;line-height:1.9">${yen(P.cost)}</div><div class="d">予算 ${isFinite(P.budget)?yen(P.budget):'—'}</div></div>
+    <div class="tile"><div class="k">期待反響</div><div class="v">${fmt1(P.exp)}</div><div class="d">全体平均 ${fmt1(M.g)}/回</div></div>
+  </div>
+  ${need<=0?`<p class="muted" style="margin:0 2px 10px">${ymLabel(ui.planMonth)}は、来店済みと登録済みの予定で目標回数に達しています。</p>`:P.picks.length<need?`<p class="muted" style="margin:0 2px 10px">※予算または空き日の都合で、残り${need}回のうち${P.picks.length}回分を提案しています。</p>`:''}
+  ${P.picks.map((p,i)=>{const s=p.s,[,mm,dd]=p.date.split('-');return `<div class="card plan"><div class="d">${+mm}/${+dd}<small>${WD[wdOf(p.date)]}曜</small></div><div class="grow">
+    <div class="store">${esc(s.key)} <span class="muted">${esc(s.area)}</span> ${p.why==='explore'?'<span class="badge warn">お試し枠</span>':p.why==='event'?'<span class="badge ok">イベント</span>':''}</div>
+    ${p.cast?`<div><span class="chip">${esc(p.cast)}</span></div>`:''}
+    <div class="muted">想定 ${yen(s.cost)}・期待反響 ${fmt1(s.s)}<br>${p.why==='event'?`「${esc(p.title)}」に合わせた来店です。`:p.why==='explore'?`投稿済みの来店が${s.ev}回とデータが少ないため、傾向をつかむための枠です。`:`根拠：投稿済みの来店${s.ev}回の平均反響 ${fmt1(s.per??0)}、平均利用額 ${yen(s.cost)}`}</div>
+    <button class="btn sm" data-act="add-plan" data-i="${i}" style="margin-top:6px">予定に追加</button></div></div>`}).join('')}
+  ${P.picks.length>1?`<button class="btn" data-act="add-plan-all" style="width:100%;margin-bottom:10px">すべて予定に追加</button>`:''}
   <div class="card"><h2>提案の考え方</h2><p class="muted">
-    ・店舗ごとの「来店あたり反響」を期待値とし、実績の少ない店舗は全体平均（${fmt1(P.g)}）に寄せて過大評価を防いでいます。<br>
+    ・店舗ごとの「来店あたり反響」を期待値とし、実績の少ない店舗は全体平均（${fmt1(M.g)}）に寄せて過大評価を防いでいます。<br>
+    ・登録したイベントとキャストの誕生日を最優先で入れ、来店済み・登録済みの予定は回数と予算から差し引いています。<br>
     ・同じ店舗が続くと期待値を25%ずつ下げ、ネタの偏りを避けます。${P.tight?'<br>・予算が平均単価×回数より少ないため、反響÷利用額（コスパ）を優先しています。':''}<br>
-    ・日付は月内に分散させ、反響の良い曜日${top?`（現状は${top}）`:''}を優先。キャストはその店舗で反響が最も高い人です。<br>
-    ・判断材料は投稿済みの来店 ${P.evN}件です。件数が少ないうちは参考程度にしてください。</p>
+    ・日付は月内に分散させ、反響の良い曜日${top?`（現状は${top}）`:''}を優先。キャストはその店舗で反響が最も高い人（推しは少し優先）です。<br>
+    ・判断材料は投稿済みの来店 ${M.ev.length}件です。件数が少ないうちは参考程度にしてください。</p>
     <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>店舗</th><th>期待反響</th><th>平均単価</th><th>評価来店</th><th>最終来店</th></tr></thead><tbody>
     ${P.stores.map(s=>`<tr><td>${esc(s.key)}</td><td class="num">${fmt1(s.s)}</td><td class="num">${yen(s.cost)}</td><td class="num">${s.ev}/${s.visits}</td><td class="num">${s.last.slice(5).replace('-','/')}</td></tr>`).join('')}</tbody></table></div>
   </div>`;
 }
+function openPlanForm(type,date,pre={}){
+  const ev=type==='event';
+  showDlg(`<form id="plform" data-type="${type}"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${ev?'イベントを追加':'来店予定を追加'}</h2><button class="btn pri sm">保存</button></div>
+  <div class="dbody">
+    <label class="f"><span>日付</span><input type="date" name="date" required value="${date||today()}"></label>
+    ${ev?`<label class="f"><span>イベント名（生誕祭、周年、コラボなど）</span><input type="text" name="title" required autocomplete="off"></label>`:''}
+    <label class="f"><span>店舗</span><input type="text" name="store" list="dl-store" value="${esc(pre.store)}" ${ev?'':'required'} autocomplete="off"></label>
+    <label class="f"><span>キャスト</span><input type="text" name="cast" list="dl-cast" value="${esc(pre.cast)}" autocomplete="off"></label>
+    ${ev?`<p class="muted">店舗を入れたイベントは、来店スケジュールの提案で優先されます。</p>`:`<label class="f"><span>想定利用額（空欄＝その店舗の平均）</span><input type="number" name="est" inputmode="numeric" min="0"></label>
+    <label class="f"><span>メモ</span><input type="text" name="memo" autocomplete="off"></label>`}
+  </div></form>`);
+}
+async function savePlanForm(f){
+  const type=f.dataset.type,store=f.store.value.trim(),vs=visits.filter(v=>v.store===store);
+  const p={id:uid(),type,date:f.date.value,store,cast:f.cast.value.trim(),area:vs[0]?.area||''};
+  if(type==='event')p.title=f.title.value.trim();else{p.est=f.est.value!==''?+f.est.value:(vs.length?Math.round(sum(vs,v=>v.amount)/vs.length):0);p.memo=f.memo.value.trim()}
+  plans.push(p);await dbPut('plans',p);closeDlg(true);go('plan',{day:p.date,cal:p.date.slice(0,7)});toast('追加しました');
+}
 
 /* ---------- 設定 ---------- */
 function renderConf(){
+  const ns=visits.filter(v=>v.sample).length;
   $('#main').innerHTML=`
+  <div class="card"><h2>月の予算・目標</h2><div class="grid2">
+    <label class="f"><span>月の予算（円）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
+    <label class="f"><span>月の来店回数</span><input type="number" id="pl-n" min="1" inputmode="numeric" value="${esc(conf.target)}"></label>
+  </div><p class="muted">ホームの予算バーと来店提案に使います。</p></div>
   <div class="card"><h2>反響スコアの重み</h2><div class="grid2">
     ${[['likes','♡ いいね'],['reposts','🔁 リポスト'],['replies','💬 返信'],['imps','👁 インプレッション']].map(([k,l])=>`<label class="f"><span>${l} ×</span><input type="number" step="0.001" min="0" data-w="${k}" value="${conf.w[k]}"></label>`).join('')}
   </div><p class="muted">重視したい指標の数値を大きくしてください。分析と提案に反映されます。</p></div>
   <div class="card"><h2>定型ハッシュタグ</h2><input type="text" id="c-tags" value="${esc(conf.hashtags)}" placeholder="例：#もみじクライマックス"><p class="muted" style="margin-top:6px">「来店メモを挿入」で本文の末尾に付きます。</p></div>
-  <div class="card"><h2>バックアップ</h2><p class="muted" style="margin-bottom:8px">データはこのブラウザ内（この端末）だけに保存されます。機種変更やブラウザのデータ消去に備えて、定期的に書き出してください。</p>
-    <div class="row"><button class="btn" data-act="export">書き出し（JSON）</button><label class="btn" style="display:inline-flex;align-items:center">読み込み<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>
-  <div class="card"><h2>データ</h2><p class="muted" style="margin-bottom:8px">来店 ${visits.length}件・投稿 ${posts.length}件</p>
-    <div class="row"><button class="btn" data-act="sample">サンプルデータを追加</button><button class="btn danger" data-act="wipe">全データを削除</button></div></div>`;
+  <div class="card"><h2>バックアップ・書き出し</h2><p class="muted" style="margin-bottom:8px">データはこのブラウザ内（この端末）だけに保存されます。機種変更やブラウザのデータ消去に備えて、定期的にバックアップしてください。${conf.lastBackup?`<br>前回のバックアップ：${esc(conf.lastBackup)}`:'<br>まだバックアップしていません。'}</p>
+    <div class="row"><button class="btn pri" data-act="export">バックアップ（写真込み）</button><label class="btn">読み込み<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="csv" data-k="visits">来店をCSVで書き出し</button><button class="btn sm" data-act="csv" data-k="posts">投稿をCSVで書き出し</button></div></div>
+  <div class="card"><h2>データ</h2><p class="muted" style="margin-bottom:8px">来店 ${visits.length}件・投稿 ${posts.length}件・予定 ${plans.length}件</p>
+    <div class="row"><button class="btn" data-act="sample">サンプルデータを追加</button>${ns?`<button class="btn" data-act="wipe-sample">サンプルだけ削除</button>`:''}<button class="btn danger" data-act="wipe">全データを削除</button></div></div>`;
 }
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 async function exportAll(){
-  const data={app:'momiji-climax',version:1,exported:new Date().toISOString(),conf,visits,posts,photos:await dbAll('photos')};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.download=`momiji-backup-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  const data={app:'momiji-climax',version:2,exported:new Date().toISOString(),conf,visits,posts,plans,notes:[...notes.values()],photos:await dbAll('photos')};
+  download(`momiji-backup-${today()}.json`,JSON.stringify(data),'application/json');conf.lastBackup=today();saveConf();render();
+}
+function exportCsv(kind){
+  const q=x=>`"${String(x??'').replace(/"/g,'""')}"`;let rows;
+  if(kind==='visits')rows=[['来店日','エリア','店舗','キャスト','利用額','出来事','タグ','投稿数','反響'],...[...visits].sort((a,b)=>a.date.localeCompare(b.date)).map(v=>{const r=react(v);return[v.date,v.area,v.store,v.casts.join('、'),v.amount,v.episode,v.tags.join('、'),r.n,r.s]})];
+  else rows=[['投稿日','時刻','状態','店舗','本文','URL','いいね','リポスト','返信','インプレッション','反響スコア'],...[...posts].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(p=>[p.date,p.time,p.status==='posted'?'投稿済':'下書き',visits.find(v=>v.id===p.visitId)?.store,p.text,p.url,p.likes,p.reposts,p.replies,p.imps,score(p)])];
+  download(`momiji-${kind}-${today()}.csv`,'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');
 }
 async function importAll(file){
   let d;try{d=JSON.parse(await file.text())}catch(e){alert('ファイルを読み込めませんでした。');return}
   if(d.app!=='momiji-climax'||!Array.isArray(d.visits)){alert('このアプリのバックアップファイルではありません。');return}
   if(!confirm(`来店 ${d.visits.length}件・投稿 ${(d.posts||[]).length}件を読み込みます。\n同じ記録は上書きされ、それ以外の既存データは残ります。よろしいですか？`))return;
-  for(const v of d.visits)await dbPut('visits',v);for(const p of d.posts||[])await dbPut('posts',p);for(const p of d.photos||[])await dbPut('photos',p);
+  for(const s of STORES)for(const x of d[s]||[])await dbPut(s,x);
   if(d.conf){conf={...DEF,...d.conf,w:{...DEF.w,...(d.conf.w||{})}};saveConf()}
   await load();render();toast('読み込みました');
 }
@@ -493,60 +721,98 @@ async function addSample(){
   const now=new Date();
   for(let i=0;i<34;i++){
     const d=new Date(now);d.setDate(d.getDate()-Math.floor(rnd()*240)-1);
-    const k=i<2?3:Math.floor(rnd()*3),s=S[k],date=ymd(d),wk=[0,6].includes(d.getDay())?1.4:1;
+    const k=i<2?3:Math.floor(rnd()*3),s=S[k],date=ymd(d),wk=[0,6].includes(d.getDay())?1.4:1,ev=rnd()<.25;
     const v={id:uid(),date,store:s[0],area:s[1],casts:[s[2][Math.floor(rnd()*s[2].length)]],amount:Math.round(s[3]*(.6+rnd()*.9)/500)*500,
-      episode:'（サンプル）当日の出来事メモ',tags:rnd()<.25?['イベント']:[],photos:[],sample:true};
+      episode:'（サンプル）当日の出来事メモ',tags:ev?['イベント']:[],photos:[],sample:true};
     await dbPut('visits',v);
-    if(rnd()<.75){const base=s[4]*wk*(.5+rnd());
-      await dbPut('posts',{id:uid(),visitId:v.id,status:'posted',date,text:'（サンプル）投稿本文',url:'',likes:Math.round(base*.7),reposts:Math.round(base*.1),replies:Math.round(base*.05),imps:Math.round(base*40),sample:true})}
+    if(rnd()<.75){const base=s[4]*wk*(ev?1.5:1)*(.5+rnd());
+      await dbPut('posts',{id:uid(),visitId:v.id,status:'posted',date,time:`${pad(8+Math.floor(rnd()*15))}:00`,text:'（サンプル）投稿本文',url:'',likes:Math.round(base*.7),reposts:Math.round(base*.1),replies:Math.round(base*.05),imps:Math.round(base*40),sample:true})}
   }
   await load();render();toast('サンプルデータを追加しました');
 }
 
 /* ---------- events ---------- */
 document.addEventListener('click',async e=>{
-  const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act,id=el.dataset.id;
-  if(a==='view'){e.stopPropagation();return openViewer(id)}
-  if(a==='view-form'){const p=form.photos[+el.dataset.i];return openViewer(p.id,p.data)}
-  if(a==='new-visit')return openVisit();
+  const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act,id=el.dataset.id,D=el.dataset;
+  if(a==='undo'){const f=undoFn;undoFn=null;$('#toast').classList.remove('on');return f&&f()}
+  if(a==='tab')return go(D.k);
+  if(a==='goto')return go(D.tab,{pseg:D.seg});
+  if(a==='view')return openViewer(id);
+  if(a==='view-form'){const p=form.photos[+D.i];return openViewer(p.id,p.data)}
+  if(a==='new-visit')return openVisit(null,D.d?{date:D.d}:null);
   if(a==='edit-visit')return openVisit(id);
-  if(a==='close')return $('#dlg').close();
-  if(a==='rm-photo'){const[p]=form.photos.splice(+el.dataset.i,1);if(!p.data)form.removed.push(p.id);return drawFormThumbs()}
-  if(a==='add-cast'){const f=$('#vform');f.casts.value=[...splitList(f.casts.value),el.dataset.c].join('、');return drawCastChips()}
-  if(a==='del-visit'){if(!confirm('この来店記録を削除しますか？（紐づく投稿は残り、紐づけだけ外れます）'))return;
-    const v=visits.find(x=>x.id===id);for(const p of v.photos)await dbDel('photos',p.id);
-    for(const p of posts.filter(p=>p.visitId===id)){p.visitId='';await dbPut('posts',p)}
-    await dbDel('visits',id);visits=visits.filter(x=>x.id!==id);$('#dlg').close();render();return toast('削除しました')}
-  if(a==='new-post'){e.stopPropagation();return openPost(null,id)}
+  if(a==='dup-visit'){const v=visits.find(x=>x.id===id);return openVisit(null,{store:v.store,area:v.area,casts:v.casts,amount:v.amount,tags:[]})}
+  if(a==='close')return closeDlg();
+  if(a==='amt'){const f=$('#vform');f.amount.value=+D.n?(+f.amount.value||0)+ +D.n:'';dirty=true;return}
+  if(a==='pick-store'){const f=$('#vform');f.store.value=D.name;f.area.value='';fillArea(f);dirty=true;return drawCastChips()}
+  if(a==='rm-photo'){const[p]=form.photos.splice(+D.i,1);if(!p.data)form.removed.push(p.id);dirty=true;return drawFormThumbs()}
+  if(a==='add-cast'){const f=$('#vform');f.casts.value=[...splitList(f.casts.value),D.c].join('、');dirty=true;return drawCastChips()}
+  if(a==='add-tag'){const f=$('#vform');f.tags.value=[...splitList(f.tags.value),D.c].join('、');dirty=true;return drawCastChips()}
+  if(a==='del-visit'){if(!confirm('この来店記録を削除しますか？'))return;
+    const v=visits.find(x=>x.id===id),linked=posts.filter(p=>p.visitId===id);
+    for(const p of linked){p.visitId='';await dbPut('posts',p)}
+    await dbDel('visits',id);visits=visits.filter(x=>x.id!==id);closeDlg(true);render();
+    // 写真は「元に戻す」の猶予が過ぎてから消す
+    const purge=setTimeout(async()=>{for(const p of v.photos)await dbDel('photos',p.id)},7000);
+    return toast('削除しました',async()=>{clearTimeout(purge);await dbPut('visits',v);visits.push(v);for(const p of linked){p.visitId=id;await dbPut('posts',p)}render()})}
+  if(a==='skip'){const v=visits.find(x=>x.id===id);v.skip=true;await dbPut('visits',v);render();return toast('ネタ在庫から外しました',async()=>{v.skip=false;await dbPut('visits',v);render()})}
+  if(a==='new-post')return openPost(null,id);
   if(a==='edit-post')return openPost(id);
-  if(a==='del-post'){if(!confirm('この投稿を削除しますか？'))return;await dbDel('posts',id);posts=posts.filter(x=>x.id!==id);$('#dlg').close();render();return toast('削除しました')}
+  if(a==='del-post'){if(!confirm('この投稿を削除しますか？'))return;const p=posts.find(x=>x.id===id);await dbDel('posts',id);posts=posts.filter(x=>x.id!==id);closeDlg(true);render();
+    return toast('削除しました',async()=>{await dbPut('posts',p);posts.push(p);render()})}
   if(a==='tpl'){const f=$('#pform'),v=visits.find(x=>x.id===f.visitId.value);if(!v)return toast('元になる来店を選んでください');
     const t=[[v.store,v.area&&`（${v.area}）`].filter(Boolean).join(''),v.casts.join('、'),'',v.episode,'',[...v.tags.map(t=>'#'+t),conf.hashtags].filter(Boolean).join(' ')].join('\n').replace(/\n{3,}/g,'\n\n').trim();
-    f.text.value=f.text.value?f.text.value+'\n'+t:t;return countPost()}
+    f.text.value=f.text.value?f.text.value+'\n'+t:t;dirty=true;return countPost()}
   if(a==='copy'){try{await navigator.clipboard.writeText($('#pform').text.value);toast('コピーしました')}catch(_){toast('コピーできませんでした')}return}
   if(a==='share'){try{await navigator.share({text:$('#pform').text.value})}catch(_){}return}
-  if(a==='pseg'){ui.pseg=el.dataset.k;return render()}
-  if(a==='range'){ui.range=el.dataset.k;return render()}
-  if(a==='dim'){ui.dim=el.dataset.k;return render()}
-  if(a==='tsort'){ui.tsort=el.dataset.k;return render()}
-  if(a==='clear-filter'){ui.f={area:'',store:'',cast:'',from:'',to:'',unposted:false,photo:false};ui.q='';return render()}
+  if(a==='xpost')return void window.open('https://x.com/intent/post?text='+encodeURIComponent($('#pform').text.value),'_blank','noopener');
+  if(a==='mark-posted'){const f=$('#pform'),n=new Date();f.status.value='posted';if(!f.date.value)f.date.value=today();if(!f.time.value)f.time.value=`${pad(n.getHours())}:${pad(n.getMinutes())}`;dirty=true;return toast('投稿済みにしました。保存を押してください')}
+  if(a==='vseg'){ui.vseg=D.k;return render()}
+  if(a==='pseg'){ui.pseg=D.k;return render()}
+  if(a==='range'){ui.range=D.k;return render()}
+  if(a==='dim'){ui.dim=D.k;return render()}
+  if(a==='tsort'){ui.tsort=D.k;return render()}
+  if(a==='qf'){const f=ui.f,ym=today().slice(0,7);if(D.k==='month'){const on=f.from===ym&&f.to===ym;f.from=f.to=on?'':ym}else f[D.k]=!f[D.k];return render()}
+  if(a==='unf'){ui.f[D.k]='';return render()}
+  if(a==='ftag'){ui.f.tag=D.name;return go('visits',{vseg:'list'})}
+  if(a==='clear-filter'){ui.f=F0();ui.q='';return render()}
+  if(a==='ent')return openEntity(D.kind,D.name);
+  if(a==='ent-list'){closeDlg(true);ui.f=F0();ui.q='';ui.f[D.kind]=D.name;return go('visits',{vseg:'list'})}
+  if(a==='ent-plan')return openPlanForm('plan',today(),D.kind==='cast'?{cast:D.name,store:castStore(D.name)}:{store:D.name});
+  if(a==='rename')return renameEntity(D.kind,D.name);
+  if(a==='cal'){ui.cal=addMonth(ui.cal,+D.n);return render()}
+  if(a==='day'){ui.day=D.d;ui.cal=D.d.slice(0,7);return render()}
+  if(a==='new-plan')return openPlanForm('plan',D.d);
+  if(a==='new-event')return openPlanForm('event',D.d);
+  if(a==='del-plan'){const p=plans.find(x=>x.id===id);await dbDel('plans',id);plans=plans.filter(x=>x.id!==id);render();return toast('取り消しました',async()=>{await dbPut('plans',p);plans.push(p);render()})}
+  if(a==='plan-rec'){const p=plans.find(x=>x.id===id);return openVisit(null,{date:p.date,store:p.store,area:p.area,casts:p.cast?[p.cast]:[],planId:p.id})}
+  if(a==='ng'){const i=+D.i;conf.ngWd=conf.ngWd.includes(i)?conf.ngWd.filter(x=>x!==i):[...conf.ngWd,i];saveConf();return render()}
+  if(a==='suggest'){ui.showPlan=true;render();return $('#proposal').scrollIntoView({behavior:'smooth',block:'start'})}
+  if(a==='add-plan'){const p=lastPlan.picks[+D.i];await addPlan(p);ui.day=p.date;ui.cal=p.date.slice(0,7);render();return toast('予定に追加しました')}
+  if(a==='add-plan-all'){for(const p of lastPlan.picks)await addPlan(p);ui.cal=ui.planMonth;render();scrollTo(0,0);return toast('すべて予定に追加しました')}
   if(a==='export')return exportAll();
+  if(a==='csv')return exportCsv(D.k);
   if(a==='sample')return addSample();
-  if(a==='wipe'){if(!confirm('すべての来店記録・投稿・写真を削除します。元に戻せません。よろしいですか？'))return;
-    for(const s of['visits','posts','photos'])await dbClear(s);await load();render();return toast('削除しました')}
+  if(a==='wipe-sample'){if(!confirm('サンプルデータだけを削除します。よろしいですか？'))return;
+    for(const v of visits.filter(v=>v.sample))await dbDel('visits',v.id);for(const p of posts.filter(p=>p.sample))await dbDel('posts',p.id);await load();render();return toast('サンプルを削除しました')}
+  if(a==='wipe'){if(!confirm('すべての来店記録・投稿・予定・写真を削除します。元に戻せません。よろしいですか？'))return;
+    for(const s of STORES)await dbClear(s);await load();render();return toast('削除しました')}
 });
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.id==='vform')saveVisit(e.target);if(e.target.id==='pform')savePost(e.target)});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target;if(f.id==='vform')saveVisit(f);if(f.id==='pform')savePost(f);if(f.id==='plform')savePlanForm(f)});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='q'){ui.q=t.value;return drawVisitList()}
   if(t.name==='text'&&t.form?.id==='pform')return countPost();
-  if((t.name==='store'||t.name==='casts')&&t.form?.id==='vform')return drawCastChips();
+  if(['store','casts','tags'].includes(t.name)&&t.form?.id==='vform')return drawCastChips();
 });
 document.addEventListener('change',async e=>{const t=e.target;
-  if(t.dataset.f){ui.f[t.dataset.f]=t.type==='checkbox'?t.checked:t.value;return render()}
+  if(t.dataset.f){ui.f[t.dataset.f]=t.value;return render()}
   if(t.id==='sort'){ui.sort=t.value;return drawVisitList()}
-  if(t.name==='store'&&t.form?.id==='vform'&&!t.form.area.value){const last=visits.filter(v=>v.store===t.value.trim()).sort((a,b)=>b.date.localeCompare(a.date))[0];if(last)t.form.area.value=last.area;return}
+  if(t.name==='store'&&t.form?.id==='vform')return fillArea(t.form);
   if(t.name==='visitId')return drawPostVisit();
-  if(t.id==='fphoto'){for(const file of t.files){try{const img=await loadImg(file);form.photos.push({id:uid(),thumb:shrink(img,240,.7),data:shrink(img,1280,.82)})}catch(_){toast('読み込めない画像がありました')}}t.value='';return drawFormThumbs()}
+  if(t.id==='fphoto'){for(const file of t.files){try{const img=await loadImg(file);form.photos.push({id:uid(),thumb:shrink(img,240,.7),data:shrink(img,1280,.82)})}catch(_){toast('読み込めない画像がありました')}}t.value='';dirty=true;return drawFormThumbs()}
+  if(t.dataset.note){const box=t.closest('[data-ent]'),n={...note(box.dataset.ent)},g=k=>$(`[data-note=${k}]`,box);
+    n.memo=g('memo').value.trim();if(g('oshi')){n.oshi=g('oshi').checked;const bm=+g('bm').value,bd=+g('bd').value;n.birthday=bm>=1&&bm<=12&&bd>=1&&bd<=31?`${pad(bm)}-${pad(bd)}`:''}
+    await saveNote(n);dirty=false;render();return toast('メモを保存しました')}
   if(t.id==='pl-month'&&t.value){ui.planMonth=t.value;return render()}
   if(t.id==='pl-n'){conf.target=t.value;saveConf();return render()}
   if(t.id==='pl-b'){conf.budget=t.value;saveConf();return render()}
@@ -556,9 +822,11 @@ document.addEventListener('change',async e=>{const t=e.target;
 });
 
 /* ---------- boot ---------- */
-async function load(){visits=await dbAll('visits');posts=await dbAll('posts');visits.forEach(v=>{v.casts||=[];v.tags||=[];v.photos||=[];v.amount=+v.amount||0})}
+async function load(){visits=await dbAll('visits');posts=await dbAll('posts');plans=await dbAll('plans');notes=new Map((await dbAll('notes')).map(n=>[n.id,n]));
+  visits.forEach(v=>{v.casts||=[];v.tags||=[];v.photos||=[];v.amount=+v.amount||0})}
 (async()=>{try{db=await openDB();await load();if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});render()}
-  catch(err){$('#main').innerHTML=`<div class="empty">このブラウザではデータを保存できません（プライベートブラウズ等）。通常モードで開いてください。</div>`}})();
+  catch(err){console.error(err);$('#main').innerHTML=`<div class="empty">このブラウザではデータを保存できません（プライベートブラウズ等）。通常モードで開いてください。</div>`}
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})})();
 </script>
 </body>
 </html>
