@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="robots" content="noindex">
-<meta name="theme-color" content="#B93A26">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
-<title>もみじクライマックス 投稿サポート</title>
+<title>もみじクライマックス投稿サポート</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -16,17 +7,21 @@
 --accent:#B93A26;--on-accent:#FFFFFF;--soft:#FBE6DF;--bar:#C8472F;--ok:#2F7D4F;--warn:#9A6400;
 --radius:12px;
 }
-@media (prefers-color-scheme:dark){:root{
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
 --bg:#1B1614;--surface:#272019;--ink:#F2E9E4;--ink2:#B3A59D;--line:#40352E;
 --accent:#F08A6E;--on-accent:#2B1510;--soft:#43271F;--bar:#E0694D;--ok:#7CCB9A;--warn:#E3B45A;
-}}
+color-scheme:dark}}
+:root[data-theme="dark"]{
+--bg:#1B1614;--surface:#272019;--ink:#F2E9E4;--ink2:#B3A59D;--line:#40352E;
+--accent:#F08A6E;--on-accent:#2B1510;--soft:#43271F;--bar:#E0694D;--ok:#7CCB9A;--warn:#E3B45A;
+color-scheme:dark}
 html{-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-.wrap{max-width:720px;margin:0 auto;padding:12px 16px}
+.wrap{max-width:720px;margin:0 auto;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 10px}
 header.top h1{font-size:17px;font-weight:700}
 header.top h1 span{color:var(--accent)}
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:20}
 nav.tabs button{flex:1;max-width:144px;background:none;border:0;color:var(--ink2);font:inherit;font-size:11px;padding:8px 0 10px;cursor:pointer}
 nav.tabs button b{display:block;font-size:19px;font-weight:400;line-height:1.3}
 nav.tabs button.on{color:var(--accent);font-weight:700}
@@ -49,7 +44,7 @@ label.f>span,div.f>span{display:block;margin-bottom:3px}
 .btn.sm{padding:4px 10px;min-height:32px;font-size:13px}
 .btn.danger{color:var(--accent)}
 .btn.icon{border:0;background:none;font-size:20px;padding:4px 8px}
-.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;border-radius:28px;padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;border-radius:28px;padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .chip{display:inline-block;background:var(--soft);color:var(--ink);border-radius:20px;padding:1px 9px;font-size:12px;margin:2px 4px 2px 0;border:0}
 button.chip{cursor:pointer;min-height:28px}
 button.chip.line{background:none;border:1px solid var(--line);color:var(--ink2)}
@@ -88,7 +83,10 @@ th.on{color:var(--accent);font-weight:700}
 .chart .read b{color:var(--ink);font-size:14px}
 .meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}
 .meter i{display:block;height:100%;background:var(--bar);border-radius:5px}
-dialog{border:0;background:var(--bg);color:var(--ink);width:100%;max-width:640px;max-height:100dvh;height:100dvh;margin:0 auto;padding:0}
+dialog{border:0;background:var(--bg);color:var(--ink);width:100%;max-width:640px;max-height:100dvh;height:100dvh;margin:0 auto;padding:env(safe-area-inset-top,0px) 0 0}
+#ask{height:auto;width:calc(100% - 32px);max-width:360px;margin:auto;border-radius:16px;padding:0}
+#ask p{white-space:pre-wrap;margin-bottom:12px}
+#ask .row{justify-content:flex-end;margin-top:12px}
 @media(min-width:680px){dialog{height:auto;max-height:92dvh;margin:auto;border-radius:16px}}
 dialog::backdrop{background:rgba(0,0,0,.5)}
 .dhead{position:sticky;top:0;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);z-index:2}
@@ -118,11 +116,9 @@ ul.ins li:last-child{border-bottom:0}
 #toast.on{opacity:1;pointer-events:auto}
 #toast button{background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
 </style>
-</head>
-<body>
 <div class="wrap">
   <header class="top"><h1>🍁 <span>もみじクライマックス</span> 投稿サポート</h1><button class="btn icon" data-act="tab" data-k="conf" aria-label="設定">⚙️</button></header>
-  <main id="main"></main>
+  <main id="main"><div class="empty">読み込み中…</div></main>
 </div>
 <nav class="tabs" id="tabs">
   <button data-act="tab" data-k="home"><b>🏠</b>ホーム</button>
@@ -133,6 +129,7 @@ ul.ins li:last-child{border-bottom:0}
 </nav>
 <dialog id="dlg"></dialog>
 <dialog id="viewer"><img alt=""><div class="cap"><span id="vcap"></span><button class="btn sm" id="vopen">来店を開く</button></div></dialog>
+<dialog id="ask"><div class="dbody"><p id="askmsg"></p><input type="text" id="askin" autocomplete="off"><div class="row"><button class="btn" data-ask="0">キャンセル</button><button class="btn pri" data-ask="1" id="askok">OK</button></div></div></dialog>
 <div id="toast"></div>
 <datalist id="dl-area"></datalist><datalist id="dl-store"></datalist><datalist id="dl-cast"></datalist>
 
@@ -160,24 +157,30 @@ const sum=(a,f)=>a.reduce((t,x)=>t+f(x),0);
 let undoFn=null;
 function toast(m,undo){const t=$('#toast');undoFn=undo||null;t.innerHTML=esc(m)+(undo?'<button data-act="undo">元に戻す</button>':'');t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>{t.classList.remove('on');undoFn=null},undo?6000:1800)}
 
-/* ---------- storage ---------- */
-let db;
-const STORES=['visits','posts','photos','plans','notes'];
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('momiji-climax',2);
-  r.onupgradeneeded=()=>{for(const s of STORES)if(!r.result.objectStoreNames.contains(s))r.result.createObjectStore(s,{keyPath:'id'})};
-  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function tx(store,mode,fn){return new Promise((res,rej)=>{const t=db.transaction(store,mode);const q=fn(t.objectStore(store));
-  t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})}
-const dbAll=s=>tx(s,'readonly',o=>o.getAll());
-const dbGet=(s,id)=>tx(s,'readonly',o=>o.get(id));
-const dbPut=(s,v)=>tx(s,'readwrite',o=>o.put(v));
-const dbDel=(s,id)=>tx(s,'readwrite',o=>o.delete(id));
-const dbClear=s=>tx(s,'readwrite',o=>o.clear());
+/* ---------- storage（Claudeのアーティファクト用データベース。本人だけが読める領域に保存） ---------- */
+let base=null,ASSETS=null,DL=null;
+const STORES=['visits','posts','plans','notes'];
+const clean=v=>JSON.parse(JSON.stringify(v));
+const col=s=>base.collection(s);
+async function dbAll(s){const out=[];let last=null;
+  for(;;){const q=last===null?col(s).orderBy('_k').limit(500):col(s).where('_k','>',last).orderBy('_k').limit(500);
+    const snap=await q.get();snap.docs.forEach(d=>out.push(clean(d.data())));if(snap.size<500)break;last=out[out.length-1]._k}
+  return out}
+async function dbPut(s,v){if(!v._k)v._k=s==='notes'?uid():v.id;await col(s).doc(v._k).set(clean(v))}
+const dbDel=(s,k)=>col(s).doc(k).delete();
+async function dbClear(s){for(const d of await dbAll(s))await dbDel(s,d._k)}
+function dataBlob(u){const[h,b]=u.split(','),bin=atob(b),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:h.slice(5).split(';')[0]})}
+const delAsset=async id=>{try{if(ASSETS)await ASSETS.delete(id)}catch(e){}};
+// 確認ダイアログ（この環境では confirm / prompt が使えないため自前で用意）
+let askRes=null;
+function ask(msg,o={}){$('#askmsg').textContent=msg;const i=$('#askin');i.hidden=o.text===undefined;i.value=o.text||'';$('#askok').textContent=o.ok||'OK';$('#ask').showModal();return new Promise(r=>askRes=r)}
+function askDone(ok){if(!askRes)return;const r=askRes,i=$('#askin');askRes=null;$('#ask').close();r(ok?(i.hidden?true:i.value):false)}
+$('#ask').addEventListener('click',e=>{const b=e.target.closest('[data-ask]');if(b)askDone(b.dataset.ask==='1')});
+$('#ask').addEventListener('cancel',e=>{e.preventDefault();askDone(false)});
 
 const DEF={w:{likes:1,reposts:2,replies:2,imps:0},hashtags:'',budget:'',target:'',ngWd:[]};
-let conf=structuredClone(DEF);
-try{const c=JSON.parse(localStorage.getItem('momiji-conf')||'{}');conf={...DEF,...c,w:{...DEF.w,...(c.w||{})}}}catch(e){}
-const saveConf=()=>{try{localStorage.setItem('momiji-conf',JSON.stringify(conf))}catch(e){}};
+let conf=structuredClone(DEF),confBusy=Promise.resolve();
+const saveConf=()=>{const c=clean(conf);confBusy=confBusy.then(()=>base.set({conf:c})).catch(()=>toast('設定を保存できませんでした'))};
 
 /* ---------- state ---------- */
 let visits=[],posts=[],plans=[],notes=new Map();
@@ -207,8 +210,8 @@ async function saveNote(n){notes.set(n.id,n);await dbPut('notes',n)}
 /* ---------- photos ---------- */
 function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=rej;i.src=u})}
 function shrink(img,max,q){const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
-async function openViewer(id,pending){let d=pending;if(!d){const r=await dbGet('photos',id);d=r&&r.data}if(!d)return;
-  const v=visits.find(x=>x.photos.some(p=>p.id===id));$('#viewer img').src=d;
+function openViewer(id,pending){const v=visits.find(x=>x.photos.some(p=>p.id===id)),ph=v&&v.photos.find(p=>p.id===id),im=$('#viewer img');
+  im.onerror=()=>{im.onerror=null;if(ph)im.src=ph.thumb};im.src=pending||(ph&&ph.local?ph.thumb:'/_blob/'+id);
   $('#vcap').textContent=v?`${dlabel(v.date)} ${v.store} ${v.casts.join('、')}`:'';$('#vopen').hidden=!v||$('#dlg').open;$('#vopen').dataset.id=v?v.id:'';$('#viewer').showModal()}
 $('#viewer').addEventListener('click',e=>{$('#viewer').close();if(e.target.id==='vopen')openVisit(e.target.dataset.id)});
 
@@ -340,7 +343,7 @@ function drawVisitList(){
 /* ---------- 来店フォーム ---------- */
 let form=null,dirty=false;
 function showDlg(html){$('#dlg').innerHTML=html;dirty=false;if(!$('#dlg').open)$('#dlg').showModal();$('#dlg').scrollTop=0}
-function closeDlg(force){if(!force&&dirty&&!confirm('入力中の内容を破棄して閉じますか？'))return;dirty=false;$('#dlg').close()}
+async function closeDlg(force){if(!force&&dirty&&!await ask('入力中の内容を破棄して閉じますか？',{ok:'破棄する'}))return;dirty=false;$('#dlg').close()}
 $('#dlg').addEventListener('cancel',e=>{e.preventDefault();closeDlg()});
 $('#dlg').addEventListener('input',()=>dirty=true);
 function openVisit(id,pre){
@@ -388,8 +391,10 @@ function drawCastChips(){
 function fillArea(f){if(f.area.value)return;const last=visits.filter(v=>v.store===f.store.value.trim()).sort((a,b)=>b.date.localeCompare(a.date))[0];if(last)f.area.value=last.area}
 async function saveVisit(f){
   const photos=[];
-  for(const p of form.photos){if(p.data)await dbPut('photos',{id:p.id,data:p.data});photos.push({id:p.id,thumb:p.thumb})}
-  for(const id of form.removed)await dbDel('photos',id);
+  for(const p of form.photos){if(!p.data){photos.push({id:p.id,thumb:p.thumb,...(p.local?{local:true}:{})});continue}
+    try{if(!ASSETS)throw 0;const r=await ASSETS.upload(dataBlob(p.data));photos.push({id:r.id,thumb:p.thumb})}
+    catch(e){photos.push({id:p.id,thumb:p.thumb,local:true});toast('写真の元画像を保存できず、小さい画像だけ残しました')}}
+  for(const id of form.removed)await delAsset(id);
   const old=visits.find(x=>x.id===form.id)||{};
   const v={...old,id:form.id||uid(),date:f.date.value,amount:Math.max(0,Math.round(+f.amount.value||0)),store:f.store.value.trim(),area:f.area.value.trim(),
     casts:splitList(f.casts.value),episode:f.episode.value.trim(),tags:splitList(f.tags.value.replace(/[#＃]/g,'')),photos,skip:f.skip.checked};
@@ -423,12 +428,12 @@ function openEntity(kind,name){
   </div>`);
 }
 async function renameEntity(kind,old){
-  const nw=(prompt('新しい名前（すべての記録に反映されます。既存の名前と同じにすると統合されます）',old)||'').trim();if(!nw||nw===old)return;
+  const nw=String(await ask('新しい名前（すべての記録に反映されます。既存の名前と同じにすると統合されます）',{text:old,ok:'変更'})||'').trim();if(!nw||nw===old)return;
   for(const v of visits){let ch=false;if(kind==='store'&&v.store===old){v.store=nw;ch=true}
     if(kind==='cast'&&v.casts.includes(old)){v.casts=[...new Set(v.casts.map(c=>c===old?nw:c))];ch=true}
     if(ch)await dbPut('visits',v)}
   for(const p of plans){if(p[kind]===old){p[kind]=nw;await dbPut('plans',p)}}
-  const n=notes.get(kind+':'+old);if(n){notes.delete(n.id);await dbDel('notes',n.id);if(!notes.has(kind+':'+nw))await saveNote({...n,id:kind+':'+nw})}
+  const n=notes.get(kind+':'+old);if(n){notes.delete(n.id);await dbDel('notes',n._k);if(!notes.has(kind+':'+nw))await saveNote({...n,id:kind+':'+nw})}
   if(ui.f[kind]===old)ui.f[kind]=nw;
   render();openEntity(kind,nw);toast('名前を変更しました');
 }
@@ -458,7 +463,7 @@ function openPost(id,visitId){
     <label class="f"><span>元になる来店</span><select name="visitId"><option value="">（紐づけなし）</option>${vs.map(x=>`<option value="${x.id}" ${x.id===p.visitId?'selected':''}>${x.date}　${esc(x.store)}${isStock(x)?'　●未投稿':''}</option>`).join('')}</select></label>
     <div id="pvisit"></div>
     <label class="f"><span>本文　<b id="pcount" class="num"></b></span><textarea name="text" rows="7">${esc(p.text)}</textarea></label>
-    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="tpl">来店メモを挿入</button><button type="button" class="btn sm" data-act="copy">コピー</button>${navigator.share?`<button type="button" class="btn sm" data-act="share">共有</button>`:''}<button type="button" class="btn sm" data-act="xpost">Xで開く</button><button type="button" class="btn sm pri" data-act="mark-posted">投稿済みにする</button></div>
+    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="tpl">来店メモを挿入</button><button type="button" class="btn sm" data-act="copy">コピー</button><a class="btn sm" id="xlink" target="_blank" rel="noopener">Xで開く</a><button type="button" class="btn sm pri" data-act="mark-posted">投稿済みにする</button></div>
     <div class="grid2">
       <label class="f"><span>状態</span><select name="status"><option value="draft" ${p.status!=='posted'?'selected':''}>下書き</option><option value="posted" ${p.status==='posted'?'selected':''}>投稿済</option></select></label>
       <label class="f"><span>投稿日</span><input type="date" name="date" value="${p.date||''}"></label>
@@ -483,7 +488,7 @@ function drawPostVisit(){const f=$('#pform');const v=visits.find(x=>x.id===f.vis
     ${v.episode?`<div style="font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.episode)}</div>`:''}
     ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="">`).join('')}</div>`:''}
     ${used.length?`<div class="muted" style="margin-top:6px">※この来店はすでに${used.length}件の投稿に使っています。</div>`:''}</div>`:''}
-function countPost(){const f=$('#pform');if(f)$('#pcount').textContent=`${[...f.text.value].length}文字（X換算 ${xCount(f.text.value)}/140）`}
+function countPost(){const f=$('#pform');if(!f)return;$('#xlink').href='https://x.com/intent/post?text='+encodeURIComponent(f.text.value);$('#pcount').textContent=`${[...f.text.value].length}文字（X換算 ${xCount(f.text.value)}/140）`}
 async function savePost(f){
   const n=k=>f[k].value===''?'':Math.max(0,Math.round(+f[k].value||0));
   const p={id:f.dataset.id||uid(),visitId:f.visitId.value||'',status:f.status.value,date:f.date.value||(f.status.value==='posted'?today():''),time:f.time.value,text:f.text.value,url:f.url.value.trim(),likes:n('likes'),reposts:n('reposts'),replies:n('replies'),imps:n('imps')};
@@ -690,28 +695,28 @@ function renderConf(){
     ${[['likes','♡ いいね'],['reposts','🔁 リポスト'],['replies','💬 返信'],['imps','👁 インプレッション']].map(([k,l])=>`<label class="f"><span>${l} ×</span><input type="number" step="0.001" min="0" data-w="${k}" value="${conf.w[k]}"></label>`).join('')}
   </div><p class="muted">重視したい指標の数値を大きくしてください。分析と提案に反映されます。</p></div>
   <div class="card"><h2>定型ハッシュタグ</h2><input type="text" id="c-tags" value="${esc(conf.hashtags)}" placeholder="例：#もみじクライマックス"><p class="muted" style="margin-top:6px">「来店メモを挿入」で本文の末尾に付きます。</p></div>
-  <div class="card"><h2>バックアップ・書き出し</h2><p class="muted" style="margin-bottom:8px">データはこのブラウザ内（この端末）だけに保存されます。機種変更やブラウザのデータ消去に備えて、定期的にバックアップしてください。${conf.lastBackup?`<br>前回のバックアップ：${esc(conf.lastBackup)}`:'<br>まだバックアップしていません。'}</p>
-    <div class="row"><button class="btn pri" data-act="export">バックアップ（写真込み）</button><label class="btn">読み込み<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
-    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="csv" data-k="visits">来店をCSVで書き出し</button><button class="btn sm" data-act="csv" data-k="posts">投稿をCSVで書き出し</button></div></div>
+  <div class="card"><h2>バックアップ・書き出し</h2><p class="muted" style="margin-bottom:8px">データはあなたのClaudeアカウントに保存され、同じアカウントで開けば別の端末でも同じ内容が見られます。念のため、ときどきバックアップを取ってください（写真はバックアップに含まれません）。${conf.lastBackup?`<br>前回のバックアップ：${esc(conf.lastBackup)}`:'<br>まだバックアップしていません。'}</p>
+    <div class="row">${DL?`<button class="btn pri" data-act="export">バックアップを保存</button>`:''}<label class="btn">バックアップを読み込み<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
+    ${DL?`<div class="row" style="margin-top:8px"><button class="btn sm" data-act="csv" data-k="visits">来店をCSVで保存</button><button class="btn sm" data-act="csv" data-k="posts">投稿をCSVで保存</button></div>`:''}</div>
   <div class="card"><h2>データ</h2><p class="muted" style="margin-bottom:8px">来店 ${visits.length}件・投稿 ${posts.length}件・予定 ${plans.length}件</p>
     <div class="row"><button class="btn" data-act="sample">サンプルデータを追加</button>${ns?`<button class="btn" data-act="wipe-sample">サンプルだけ削除</button>`:''}<button class="btn danger" data-act="wipe">全データを削除</button></div></div>`;
 }
-function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+async function download(name,text){try{await DL.save({filename:name,data:text});return true}catch(e){if(!e||e.code!=='declined')toast('保存できませんでした');return false}}
 async function exportAll(){
-  const data={app:'momiji-climax',version:2,exported:new Date().toISOString(),conf,visits,posts,plans,notes:[...notes.values()],photos:await dbAll('photos')};
-  download(`momiji-backup-${today()}.json`,JSON.stringify(data),'application/json');conf.lastBackup=today();saveConf();render();
+  const data={app:'momiji-climax',version:3,exported:new Date().toISOString(),conf,visits,posts,plans,notes:[...notes.values()]};
+  if(await download(`momiji-backup-${today()}.json`,JSON.stringify(data))){conf.lastBackup=today();saveConf();render()}
 }
 function exportCsv(kind){
   const q=x=>`"${String(x??'').replace(/"/g,'""')}"`;let rows;
   if(kind==='visits')rows=[['来店日','エリア','店舗','キャスト','利用額','出来事','タグ','投稿数','反響'],...[...visits].sort((a,b)=>a.date.localeCompare(b.date)).map(v=>{const r=react(v);return[v.date,v.area,v.store,v.casts.join('、'),v.amount,v.episode,v.tags.join('、'),r.n,r.s]})];
   else rows=[['投稿日','時刻','状態','店舗','本文','URL','いいね','リポスト','返信','インプレッション','反響スコア'],...[...posts].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(p=>[p.date,p.time,p.status==='posted'?'投稿済':'下書き',visits.find(v=>v.id===p.visitId)?.store,p.text,p.url,p.likes,p.reposts,p.replies,p.imps,score(p)])];
-  download(`momiji-${kind}-${today()}.csv`,'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');
+  download(`momiji-${kind}-${today()}.csv`,'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'));
 }
 async function importAll(file){
-  let d;try{d=JSON.parse(await file.text())}catch(e){alert('ファイルを読み込めませんでした。');return}
-  if(d.app!=='momiji-climax'||!Array.isArray(d.visits)){alert('このアプリのバックアップファイルではありません。');return}
-  if(!confirm(`来店 ${d.visits.length}件・投稿 ${(d.posts||[]).length}件を読み込みます。\n同じ記録は上書きされ、それ以外の既存データは残ります。よろしいですか？`))return;
-  for(const s of STORES)for(const x of d[s]||[])await dbPut(s,x);
+  let d;try{d=JSON.parse(await file.text())}catch(e){toast('ファイルを読み込めませんでした');return}
+  if(d.app!=='momiji-climax'||!Array.isArray(d.visits)){toast('このアプリのバックアップファイルではありません');return}
+  if(!await ask(`来店 ${d.visits.length}件・投稿 ${(d.posts||[]).length}件を読み込みます。\n同じ記録は上書きされ、それ以外の既存データは残ります。よろしいですか？`,{ok:'読み込む'}))return;
+  toast('読み込んでいます…');for(const s of STORES)for(const x of d[s]||[]){if(s==='notes'){const o=notes.get(x.id);if(o)x._k=o._k}await dbPut(s,x)}
   if(d.conf){conf={...DEF,...d.conf,w:{...DEF.w,...(d.conf.w||{})}};saveConf()}
   await load();render();toast('読み込みました');
 }
@@ -719,7 +724,7 @@ async function addSample(){
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
   const S=[['サンプル店A','エリア1',['キャストあ','キャストい'],6000,60],['サンプル店B','エリア1',['キャストう'],12000,75],['サンプル店C','エリア2',['キャストえ','キャストお'],4000,30],['サンプル店D','エリア3',['キャストか'],8000,45]];
   const now=new Date();
-  for(let i=0;i<34;i++){
+  toast('サンプルを追加しています…');for(let i=0;i<24;i++){
     const d=new Date(now);d.setDate(d.getDate()-Math.floor(rnd()*240)-1);
     const k=i<2?3:Math.floor(rnd()*3),s=S[k],date=ymd(d),wk=[0,6].includes(d.getDay())?1.4:1,ev=rnd()<.25;
     const v={id:uid(),date,store:s[0],area:s[1],casts:[s[2][Math.floor(rnd()*s[2].length)]],amount:Math.round(s[3]*(.6+rnd()*.9)/500)*500,
@@ -748,25 +753,23 @@ document.addEventListener('click',async e=>{
   if(a==='rm-photo'){const[p]=form.photos.splice(+D.i,1);if(!p.data)form.removed.push(p.id);dirty=true;return drawFormThumbs()}
   if(a==='add-cast'){const f=$('#vform');f.casts.value=[...splitList(f.casts.value),D.c].join('、');dirty=true;return drawCastChips()}
   if(a==='add-tag'){const f=$('#vform');f.tags.value=[...splitList(f.tags.value),D.c].join('、');dirty=true;return drawCastChips()}
-  if(a==='del-visit'){if(!confirm('この来店記録を削除しますか？'))return;
+  if(a==='del-visit'){if(!await ask('この来店記録を削除しますか？',{ok:'削除'}))return;
     const v=visits.find(x=>x.id===id),linked=posts.filter(p=>p.visitId===id);
     for(const p of linked){p.visitId='';await dbPut('posts',p)}
     await dbDel('visits',id);visits=visits.filter(x=>x.id!==id);closeDlg(true);render();
     // 写真は「元に戻す」の猶予が過ぎてから消す
-    const purge=setTimeout(async()=>{for(const p of v.photos)await dbDel('photos',p.id)},7000);
+    const purge=setTimeout(async()=>{for(const p of v.photos)await delAsset(p.id)},7000);
     return toast('削除しました',async()=>{clearTimeout(purge);await dbPut('visits',v);visits.push(v);for(const p of linked){p.visitId=id;await dbPut('posts',p)}render()})}
   if(a==='skip'){const v=visits.find(x=>x.id===id);v.skip=true;await dbPut('visits',v);render();return toast('ネタ在庫から外しました',async()=>{v.skip=false;await dbPut('visits',v);render()})}
   if(a==='new-post')return openPost(null,id);
   if(a==='edit-post')return openPost(id);
-  if(a==='del-post'){if(!confirm('この投稿を削除しますか？'))return;const p=posts.find(x=>x.id===id);await dbDel('posts',id);posts=posts.filter(x=>x.id!==id);closeDlg(true);render();
+  if(a==='del-post'){if(!await ask('この投稿を削除しますか？',{ok:'削除'}))return;const p=posts.find(x=>x.id===id);await dbDel('posts',id);posts=posts.filter(x=>x.id!==id);closeDlg(true);render();
     return toast('削除しました',async()=>{await dbPut('posts',p);posts.push(p);render()})}
   if(a==='tpl'){const f=$('#pform'),v=visits.find(x=>x.id===f.visitId.value);if(!v)return toast('元になる来店を選んでください');
     const t=[[v.store,v.area&&`（${v.area}）`].filter(Boolean).join(''),v.casts.join('、'),'',v.episode,'',[...v.tags.map(t=>'#'+t),conf.hashtags].filter(Boolean).join(' ')].join('\n').replace(/\n{3,}/g,'\n\n').trim();
     f.text.value=f.text.value?f.text.value+'\n'+t:t;dirty=true;return countPost()}
-  if(a==='copy'){try{await navigator.clipboard.writeText($('#pform').text.value);toast('コピーしました')}catch(_){toast('コピーできませんでした')}return}
-  if(a==='share'){try{await navigator.share({text:$('#pform').text.value})}catch(_){}return}
-  if(a==='xpost')return void window.open('https://x.com/intent/post?text='+encodeURIComponent($('#pform').text.value),'_blank','noopener');
-  if(a==='mark-posted'){const f=$('#pform'),n=new Date();f.status.value='posted';if(!f.date.value)f.date.value=today();if(!f.time.value)f.time.value=`${pad(n.getHours())}:${pad(n.getMinutes())}`;dirty=true;return toast('投稿済みにしました。保存を押してください')}
+  if(a==='copy'){try{await navigator.clipboard.writeText($('#pform').text.value);toast('コピーしました')}catch(_){$('#pform').text.select();toast('本文を選択しました。そのままコピーしてください')}return}
+    if(a==='mark-posted'){const f=$('#pform'),n=new Date();f.status.value='posted';if(!f.date.value)f.date.value=today();if(!f.time.value)f.time.value=`${pad(n.getHours())}:${pad(n.getMinutes())}`;dirty=true;return toast('投稿済みにしました。保存を押してください')}
   if(a==='vseg'){ui.vseg=D.k;return render()}
   if(a==='pseg'){ui.pseg=D.k;return render()}
   if(a==='range'){ui.range=D.k;return render()}
@@ -793,10 +796,10 @@ document.addEventListener('click',async e=>{
   if(a==='export')return exportAll();
   if(a==='csv')return exportCsv(D.k);
   if(a==='sample')return addSample();
-  if(a==='wipe-sample'){if(!confirm('サンプルデータだけを削除します。よろしいですか？'))return;
+  if(a==='wipe-sample'){if(!await ask('サンプルデータだけを削除します。よろしいですか？',{ok:'削除'}))return;
     for(const v of visits.filter(v=>v.sample))await dbDel('visits',v.id);for(const p of posts.filter(p=>p.sample))await dbDel('posts',p.id);await load();render();return toast('サンプルを削除しました')}
-  if(a==='wipe'){if(!confirm('すべての来店記録・投稿・予定・写真を削除します。元に戻せません。よろしいですか？'))return;
-    for(const s of STORES)await dbClear(s);await load();render();return toast('削除しました')}
+  if(a==='wipe'){if(!await ask('すべての来店記録・投稿・予定・写真を削除します。元に戻せません。よろしいですか？',{ok:'すべて削除'}))return;
+    toast('削除しています…');for(const v of visits)for(const p of v.photos)await delAsset(p.id);for(const s of STORES)await dbClear(s);await load();render();return toast('削除しました')}
 });
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target;if(f.id==='vform')saveVisit(f);if(f.id==='pform')savePost(f);if(f.id==='plform')savePlanForm(f)});
 document.addEventListener('input',e=>{const t=e.target;
@@ -809,7 +812,7 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='sort'){ui.sort=t.value;return drawVisitList()}
   if(t.name==='store'&&t.form?.id==='vform')return fillArea(t.form);
   if(t.name==='visitId')return drawPostVisit();
-  if(t.id==='fphoto'){for(const file of t.files){try{const img=await loadImg(file);form.photos.push({id:uid(),thumb:shrink(img,240,.7),data:shrink(img,1280,.82)})}catch(_){toast('読み込めない画像がありました')}}t.value='';dirty=true;return drawFormThumbs()}
+  if(t.id==='fphoto'){for(const file of t.files){try{const img=await loadImg(file);form.photos.push({id:uid(),thumb:shrink(img,200,.6),data:shrink(img,1280,.82)})}catch(_){toast('読み込めない画像がありました')}}t.value='';dirty=true;return drawFormThumbs()}
   if(t.dataset.note){const box=t.closest('[data-ent]'),n={...note(box.dataset.ent)},g=k=>$(`[data-note=${k}]`,box);
     n.memo=g('memo').value.trim();if(g('oshi')){n.oshi=g('oshi').checked;const bm=+g('bm').value,bd=+g('bd').value;n.birthday=bm>=1&&bm<=12&&bd>=1&&bd<=31?`${pad(bm)}-${pad(bd)}`:''}
     await saveNote(n);dirty=false;render();return toast('メモを保存しました')}
@@ -822,11 +825,25 @@ document.addEventListener('change',async e=>{const t=e.target;
 });
 
 /* ---------- boot ---------- */
-async function load(){visits=await dbAll('visits');posts=await dbAll('posts');plans=await dbAll('plans');notes=new Map((await dbAll('notes')).map(n=>[n.id,n]));
+async function load(){
+  const[v,p,pl,n,c]=await Promise.all([dbAll('visits'),dbAll('posts'),dbAll('plans'),dbAll('notes'),base.get()]);
+  visits=v;posts=p;plans=pl;notes=new Map(n.map(x=>[x.id,x]));
+  const cf=c.exists&&c.data().conf;if(cf){const o=clean(cf);conf={...DEF,...o,w:{...DEF.w,...(o.w||{})}}}
   visits.forEach(v=>{v.casts||=[];v.tags||=[];v.photos||=[];v.amount=+v.amount||0})}
-(async()=>{try{db=await openDB();await load();if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});render()}
-  catch(err){console.error(err);$('#main').innerHTML=`<div class="empty">このブラウザではデータを保存できません（プライベートブラウズ等）。通常モードで開いてください。</div>`}
-  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})})();
+let ready=false,loadedAt=0;
+const fail=m=>{$('#main').innerHTML=`<div class="empty">${m}</div>`};
+(async()=>{
+  const slow=setTimeout(()=>{if(!ready)fail('データにまだ接続できません。通信状況を確認して、しばらく待ってから開き直してください。')},10000);
+  try{
+    if(!window.claude||!claude.use)throw 0;
+    const[d,u]=await Promise.all([claude.use('db'),claude.use('user')]);const id=u&&await u.id();
+    if(!d||!id)throw 0;
+    base=d.doc('data/users/'+id+'/app');
+    claude.use('assets').then(x=>ASSETS=x);claude.use('downloads').then(x=>{DL=x;if(ready&&ui.tab==='conf')render()});
+    await load();ready=true;loadedAt=Date.now();clearTimeout(slow);render();
+  }catch(err){clearTimeout(slow);if(err)console.error(err);fail('データを読み込めませんでした。Claudeにサインインした状態で開いてください。')}
+})();
+addEventListener('unhandledrejection',e=>{console.error(e.reason);toast(e.reason&&e.reason.code==='quota_exceeded'?'保存できる上限に達しました':'保存できませんでした。通信状況を確認してください')});
+// 別の端末で更新したあとに戻ってきたら読み直す
+document.addEventListener('visibilitychange',async()=>{if(document.hidden||!ready||$('#dlg').open||Date.now()-loadedAt<60000)return;try{await load();loadedAt=Date.now();render()}catch(e){}});
 </script>
-</body>
-</html>
