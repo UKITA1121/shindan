@@ -58,9 +58,13 @@ button.chip.on{background:var(--accent);color:var(--on-accent);border-color:var(
 .ep{font-size:13px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
 .thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .thumbs .ph{position:relative}
+.thumbs .used{font-size:9px;left:2px;top:2px;padding:0 3px}
 .thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;cursor:zoom-in;border:1px solid var(--line)}
 .thumbs .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:12px;cursor:pointer}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.gal .ph{position:relative}
+.used{position:absolute;left:4px;top:4px;background:var(--ok);color:var(--surface);font-size:10px;font-weight:700;padding:0 5px;border-radius:4px;pointer-events:none}
+.thumbs img.sel{outline:3px solid var(--accent);outline-offset:1px}
 .gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;cursor:zoom-in;border:1px solid var(--line)}
 .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
 .tiles.t3{grid-template-columns:repeat(3,1fr)}
@@ -128,7 +132,7 @@ ul.ins li:last-child{border-bottom:0}
   <button data-act="tab" data-k="plan"><b>🗓️</b>予定</button>
 </nav>
 <dialog id="dlg"></dialog>
-<dialog id="viewer"><img alt=""><div class="cap"><span id="vcap"></span><button class="btn sm" id="vopen">来店を開く</button></div></dialog>
+<dialog id="viewer"><img alt=""><div class="cap"><span id="vcap"></span><span class="row"><button class="btn sm" id="vuse"></button><button class="btn sm" id="vopen">来店を開く</button></span></div></dialog>
 <dialog id="ask"><div class="dbody"><p id="askmsg"></p><input type="text" id="askin" autocomplete="off"><div class="row"><button class="btn" data-ask="0">キャンセル</button><button class="btn pri" data-ask="1" id="askok">OK</button></div></div></dialog>
 <div id="toast"></div>
 <datalist id="dl-area"></datalist><datalist id="dl-store"></datalist><datalist id="dl-cast"></datalist>
@@ -159,7 +163,7 @@ function toast(m,undo){const t=$('#toast');undoFn=undo||null;t.innerHTML=esc(m)+
 
 /* ---------- storage（Claudeのアーティファクト用データベース。本人だけが読める領域に保存） ---------- */
 let base=null,ASSETS=null,DL=null;
-const STORES=['visits','posts','plans','notes'];
+const STORES=['visits','posts','plans','notes','days'];
 const clean=v=>JSON.parse(JSON.stringify(v));
 const col=s=>base.collection(s);
 async function dbAll(s){const out=[];let last=null;
@@ -178,19 +182,22 @@ function askDone(ok){if(!askRes)return;const r=askRes,i=$('#askin');askRes=null;
 $('#ask').addEventListener('click',e=>{const b=e.target.closest('[data-ask]');if(b)askDone(b.dataset.ask==='1')});
 $('#ask').addEventListener('cancel',e=>{e.preventDefault();askDone(false)});
 
-const DEF={w:{likes:1,reposts:2,replies:2,imps:0},hashtags:'',budget:'',target:'',ngWd:[]};
+const DEF={w:{likes:0,reposts:0,replies:0,imps:1,follows:0},budget:'',goalFollow:'',goalImps:'',followers:[]};
 let conf=structuredClone(DEF),confBusy=Promise.resolve();
 const saveConf=()=>{const c=clean(conf);confBusy=confBusy.then(()=>base.set({conf:c})).catch(()=>toast('設定を保存できませんでした'))};
 
 /* ---------- state ---------- */
-let visits=[],posts=[],plans=[],notes=new Map();
+let visits=[],posts=[],plans=[],days=[],notes=new Map();
 const F0=()=>({area:'',store:'',cast:'',tag:'',from:'',to:'',unposted:false,photo:false});
-const ui={tab:'home',q:'',f:F0(),sort:'date',vseg:'list',pseg:'stock',range:'6',dim:'store',tsort:'visits',
+const ui={tab:'home',q:'',f:F0(),sort:'date',vseg:'list',pseg:'stock',pq:'',gf:'all',range:'6',dim:'store',tsort:'visits',
   cal:today().slice(0,7),day:today(),planMonth:addMonth(today().slice(0,7),1),showPlan:false};
-let byVisit=new Map(),M=null;
-const score=p=>(+p.likes||0)*conf.w.likes+(+p.reposts||0)*conf.w.reposts+(+p.replies||0)*conf.w.replies+(+p.imps||0)*conf.w.imps;
+let byVisit=new Map(),M=null,ORD=new Map(),CNT={store:new Map(),cast:new Map(),cheki:0},USED=new Set();
+const WN={imps:'インプレッション',follows:'フォロー増',likes:'いいね',reposts:'リポスト',replies:'返信'};
+const scoreLabel=()=>Object.keys(WN).filter(k=>+conf.w[k]).map(k=>`${WN[k]}×${conf.w[k]}`).join('＋')||'（重みが未設定）';
+const isMs=n=>n===5||(n>=10&&n%10===0); // 記念になる回数
+const score=p=>(+p.likes||0)*conf.w.likes+(+p.reposts||0)*conf.w.reposts+(+p.replies||0)*conf.w.replies+(+p.imps||0)*conf.w.imps+(+p.follows||0)*(conf.w.follows||0);
 // 来店の反響 = 紐づく「投稿済」投稿のスコア合計。n=0 は「未評価」（0点ではない）
-function react(v){const ps=(byVisit.get(v.id)||[]).filter(p=>p.status==='posted');return{n:ps.length,s:sum(ps,score)}}
+function react(v){const ps=byVisit.get(v.id)||[];return{n:ps.length,s:sum(ps,score)}}
 const K=2; // 少ない実績を全体平均に寄せる強さ
 function buildModel(){
   byVisit=new Map();for(const p of posts){if(!p.visitId)continue;if(!byVisit.has(p.visitId))byVisit.set(p.visitId,[]);byVisit.get(p.visitId).push(p)}
@@ -199,11 +206,30 @@ function buildModel(){
   const sh=(s,n)=>(s+K*g)/(n+K);
   M={ev,g,sh,store:mk(v=>[v.store]),cast:mk(v=>v.casts),tag:mk(v=>v.tags),wd:mk(v=>[wdOf(v.date)]),photo:mk(v=>[v.photos.length?'あり':'なし']),
     est(map,k){const o=map.get(k);return o?sh(o.sum,o.n):g}};
+  // 来店回数・チェキ枚数の通し番号（記念投稿用）
+  ORD=new Map();const sc=new Map(),cc=new Map();let ck=0;
+  for(const v of [...visits].sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id))){
+    const o={sn:0,cn:{},ca:0,cb:0,ms:[]};
+    if(v.store){o.sn=(sc.get(v.store)||0)+1;sc.set(v.store,o.sn);if(isMs(o.sn))o.ms.push(`${v.store} 来店${o.sn}回目`)}
+    for(const c of v.casts){const n=(cc.get(c)||0)+1;cc.set(c,n);o.cn[c]=n;if(isMs(n))o.ms.push(`${c} ${n}回目`)}
+    if(v.photos.length){o.ca=ck+1;ck+=v.photos.length;o.cb=ck;const k=Math.floor(o.cb/10)*10;if(k>=o.ca)o.ms.push(`チェキ通算${k}枚目`)}
+    ORD.set(v.id,o)}
+  CNT={store:sc,cast:cc,cheki:ck};USED=new Set(posts.flatMap(p=>p.photoIds||[]));
 }
+const photoUsed=p=>!!p.used||USED.has(p.id);
+const galImg=p=>`<div class="ph"><img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ" loading="lazy">${photoUsed(p)?'<span class="used">投稿済</span>':''}</div>`;
+// 今月の目標の実績（日別データがあればそれを優先）
+function goalStat(ym){const ds=days.filter(d=>d.date.startsWith(ym)),ps=posts.filter(p=>(p.date||'').startsWith(ym));
+  const imps=ds.length?{v:sum(ds,d=>d.imps||0),src:'日別データ'}:{v:sum(ps,p=>+p.imps||0),src:'投稿の合計'};
+  const log=[...(conf.followers||[])].sort((a,b)=>a.date.localeCompare(b.date)),inM=log.filter(x=>x.date.startsWith(ym)),before=log.filter(x=>x.date<ym+'-01').pop();
+  let fol;if(ds.some(d=>d.follows!=null))fol={v:sum(ds,d=>(d.follows||0)-(d.unfollows||0)),src:'日別データ'};
+  else if(inM.length&&(before||inM.length>1))fol={v:inM[inM.length-1].count-(before||inM[0]).count,src:'フォロワー数の記録'};
+  else fol={v:sum(ps,p=>+p.follows||0),src:'投稿経由のフォロー合計'};
+  return{imps,fol,now:log.length?log[log.length-1]:null}}
 // 来店1件の期待反響（店舗・キャスト・タグの実績から）
 function expected(v){const xs=[M.est(M.store,v.store),...v.casts.map(c=>M.est(M.cast,c)),...v.tags.map(t=>M.est(M.tag,t))];return sum(xs,x=>x)/xs.length}
 const isStock=v=>!v.skip&&!(byVisit.get(v.id)||[]).length;
-const noMetrics=p=>p.status==='posted'&&!(+p.likes||+p.reposts||+p.replies||+p.imps);
+const noMetrics=p=>!(+p.likes||+p.reposts||+p.replies||+p.imps);
 const note=id=>notes.get(id)||{id};
 async function saveNote(n){notes.set(n.id,n);await dbPut('notes',n)}
 
@@ -212,8 +238,12 @@ function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectUR
 function shrink(img,max,q){const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
 function openViewer(id,pending){const v=visits.find(x=>x.photos.some(p=>p.id===id)),ph=v&&v.photos.find(p=>p.id===id),im=$('#viewer img');
   im.onerror=()=>{im.onerror=null;if(ph)im.src=ph.thumb};im.src=pending||(ph&&ph.local?ph.thumb:'/_blob/'+id);
-  $('#vcap').textContent=v?`${dlabel(v.date)} ${v.store} ${v.casts.join('、')}`:'';$('#vopen').hidden=!v||$('#dlg').open;$('#vopen').dataset.id=v?v.id:'';$('#viewer').showModal()}
-$('#viewer').addEventListener('click',e=>{$('#viewer').close();if(e.target.id==='vopen')openVisit(e.target.dataset.id)});
+  $('#vcap').textContent=v?`${dlabel(v.date)} ${v.store} ${v.casts.join('、')}`:'';$('#vopen').hidden=!v||$('#dlg').open;$('#vopen').dataset.id=v?v.id:'';
+  const u=$('#vuse');u.hidden=!ph||!!pending;u.dataset.id=id;u.textContent=ph&&photoUsed(ph)?'未投稿に戻す':'投稿済みにする';$('#viewer').showModal()}
+$('#viewer').addEventListener('click',async e=>{$('#viewer').close();if(e.target.id==='vopen')return openVisit(e.target.dataset.id);
+  if(e.target.id!=='vuse')return;const id=e.target.dataset.id,v=visits.find(x=>x.photos.some(p=>p.id===id)),ph=v.photos.find(p=>p.id===id);
+  if(USED.has(id))return toast('投稿の記録で「載せたチェキ」に選ばれています');
+  ph.used=!ph.used;await dbPut('visits',v);render();toast(ph.used?'投稿済みにしました':'未投稿に戻しました')});
 
 /* ---------- render root ---------- */
 function render(){
@@ -244,11 +274,15 @@ function renderHome(){
   const planned=sum(plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym)),p=>+p.est||0),bud=+conf.budget||0;
   const stores=agg(visits.filter(v=>v.store),v=>[v.store]).map(o=>({...o,last:visits.filter(v=>v.store===o.key).reduce((m,v)=>v.date>m?v.date:m,'')}))
     .filter(o=>o.visits>=2&&daysAgo(o.last)>=45).sort((x,y)=>M.est(M.store,y.key)-M.est(M.store,x.key)).slice(0,3);
-  const ins=insights();
+  const ins=insights(),G=goalStat(ym),gf=+conf.goalFollow||0,gi=+conf.goalImps||0,quick=visits.filter(v=>v.quick);
+  const soon=[...[...CNT.store].map(([k,n])=>[k,n,'来店']),...[...CNT.cast].map(([k,n])=>[k,n,''])].filter(x=>isMs(x[1]+1)).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,n,w])=>`次で <b>${esc(k)}</b> ${w}${n+1}回目`);
+  const nextC=(Math.floor(CNT.cheki/10)+1)*10;if(CNT.cheki&&nextC-CNT.cheki<=3)soon.unshift(`チェキあと <b>${nextC-CNT.cheki}枚</b>で通算${nextC}枚`);
+  const gbar=(label,v,goal,src,f)=>`<div class="hd" style="margin-top:6px"><b>${label}</b><span class="num muted">${f(v)}${goal?` / ${f(goal)}`:''}</span></div>${goal?`<div class="meter"><i style="width:${Math.max(0,Math.min(100,v/goal*100))}%"></i></div>`:''}<div class="muted">${goal?(v>=goal?'🎉 達成':`あと ${f(goal-v)}`)+'・':''}${src}</div>`;
   const todo=[
     ...due.map(p=>`<div class="todo"><div class="grow"><b>${p.date===td?'今日の予定':'記録待ちの予定'}</b>：${esc(p.store)} <span class="muted">${mdlabel(p.date)}${p.cast?'・'+esc(p.cast):''}</span></div><button class="btn sm pri" data-act="plan-rec" data-id="${p.id}">記録する</button><button class="btn sm" data-act="del-plan" data-id="${p.id}">取消</button></div>`),
-    nm.length?`<div class="todo"><div class="grow"><b>反響が未入力の投稿</b> ${nm.length}件<div class="muted">入力すると分析と提案の精度が上がります</div></div><button class="btn sm" data-act="goto" data-tab="posts" data-seg="posted">入力する</button></div>`:'',
-    stock.length?`<div class="todo"><div class="grow"><b>ネタ在庫</b> ${stock.length}件<div class="muted clip">おすすめ：${mdlabel(stock[0].date)} ${esc(stock[0].store)}${M.ev.length?`（期待反響 ${fmt1(expected(stock[0]))}）`:''}</div></div><button class="btn sm" data-act="new-post" data-id="${stock[0].id}">投稿を作る</button></div>`:''
+    quick.length?`<div class="todo"><div class="grow"><b>あとで追記する来店</b> ${quick.length}件<div class="muted clip">${mdlabel(quick[0].date)} ${esc(quick[0].store)}</div></div><button class="btn sm" data-act="edit-visit" data-id="${quick[0].id}">追記する</button></div>`:'',
+    nm.length?`<div class="todo"><div class="grow"><b>反響が未入力の投稿</b> ${nm.length}件<div class="muted">投稿タブでアナリティクスのCSVを取り込めます</div></div><button class="btn sm" data-act="goto" data-tab="posts" data-seg="posted">入力する</button></div>`:'',
+    stock.length?`<div class="todo"><div class="grow"><b>ネタ在庫</b> ${stock.length}件<div class="muted clip">おすすめ：${mdlabel(stock[0].date)} ${esc(stock[0].store)}${M.ev.length?`（期待反響 ${fmt1(expected(stock[0]))}）`:''}</div></div><button class="btn sm" data-act="new-post" data-id="${stock[0].id}">投稿を記録</button></div>`:''
   ].filter(Boolean);
   const diff=(x,y,f)=>y?`先月 ${f(y)}`:'先月 記録なし';
   $('#main').innerHTML=`
@@ -257,13 +291,18 @@ function renderHome(){
     <div class="tile"><div class="k">今月の利用額</div><div class="v" style="font-size:16px;line-height:1.9">${yen(a.spend)}</div><div class="d">${diff(a.spend,b.spend,yen)}</div></div>
     <div class="tile"><div class="k">今月の反響</div><div class="v">${fmt1(a.react)}</div><div class="d">${diff(a.react,b.react,fmt1)}</div></div>
   </div>
+  <div class="card"><div class="hd"><h2>今月の目標</h2>${gf||gi?'':`<button class="btn sm" data-act="tab" data-k="conf">目標を設定</button>`}</div>
+    ${gbar('フォロワー増加',G.fol.v,gf,G.fol.src,x=>(x>0?'+':'')+Math.round(x).toLocaleString())}
+    ${gbar('インプレッション',G.imps.v,gi,G.imps.src,x=>Math.round(x).toLocaleString())}
+    <div class="row" style="margin-top:10px"><input type="number" id="fnow" inputmode="numeric" min="0" placeholder="現在のフォロワー数${G.now?`（前回 ${G.now.count.toLocaleString()}・${G.now.date.slice(5).replace('-','/')}）`:''}" class="grow" style="width:auto"><button class="btn" data-act="fol-rec">記録</button></div></div>
   <div class="card">${bud?`<div class="hd"><h2>今月の予算</h2><span class="num muted">${yen(a.spend)} / ${yen(bud)}</span></div>
     <div class="meter"><i style="width:${Math.min(100,a.spend/bud*100)}%"></i></div>
     <div class="muted">${a.spend>bud?`<b style="color:var(--warn)">⚠ 予算を ${yen(a.spend-bud)} 超えています</b>`:`残り ${yen(bud-a.spend)}`}${planned?`・今後の予定分の想定 ${yen(planned)}${a.spend<=bud&&a.spend+planned>bud?'（⚠ 予定どおりだと超過）':''}`:''}</div>`
     :`<div class="row between"><span class="muted">月の予算を設定すると、残り予算と使いすぎの注意が表示されます。</span><button class="btn sm" data-act="tab" data-k="conf">設定する</button></div>`}</div>
   <div class="card"><h2>やること</h2>${todo.length?todo.join(''):`<div class="muted">いまやることはありません。</div>`}</div>
   <div class="card"><div class="hd"><h2>これからの予定</h2><button class="btn sm" data-act="tab" data-k="plan">カレンダー</button></div>
-    ${next.length?next.map(p=>`<div class="todo"><div class="grow">${mdlabel(p.date)}　<b>${esc(p.type==='event'?'★ '+p.title:p.store)}</b> <span class="muted">${esc(p.type==='event'?p.store:p.cast)}</span></div></div>`).join(''):`<div class="muted">予定はありません。予定タブで来店スケジュールの提案を受けられます。</div>`}</div>
+    ${next.length?next.map(p=>`<div class="todo"><div class="grow">${mdlabel(p.date)}　<b>${esc(p.type==='event'?'★ '+p.title:p.store)}</b> <span class="muted">${esc(p.type==='event'?p.store:p.cast)}</span></div></div>`).join(''):`<div class="muted">予定はありません。</div>`}</div>
+  ${soon.length?`<div class="card"><h2>もうすぐ記念</h2><ul class="ins">${soon.map(t=>`<li>${t}</li>`).join('')}</ul></div>`:''}
   ${ins.length?`<div class="card"><h2>反響の傾向</h2><ul class="ins">${ins.map(t=>`<li>${t}</li>`).join('')}</ul></div>`:''}
   ${stores.length?`<div class="card"><h2>しばらく行っていない店舗</h2>${stores.map(o=>`<div class="todo"><div class="grow tap" data-act="ent" data-kind="store" data-name="${esc(o.key)}"><b>${esc(o.key)}</b> <span class="muted">${daysAgo(o.last)}日前・来店${o.visits}回${M.ev.length?`・期待反響 ${fmt1(M.est(M.store,o.key))}`:''}</span></div></div>`).join('')}</div>`:''}
   ${visits.length?'':`<div class="empty">まずは「＋ 来店を記録」から始めてください。<br>動きを試すには、右上の⚙️ → サンプルデータを追加。</div>`}
@@ -289,14 +328,16 @@ function filtered(){
   return r.sort(cmp);
 }
 function visitCard(v,extra=''){
-  const r=react(v),ps=byVisit.get(v.id)||[];
+  const r=react(v),ps=byVisit.get(v.id)||[],o=ORD.get(v.id)||{cn:{},ms:[]};
+  const ord=[o.sn?`この店 ${o.sn}回目`:'',...v.casts.map(c=>`${c} ${o.cn[c]}回目`),o.ca?`チェキ通算 ${o.ca===o.cb?o.cb:o.ca+'〜'+o.cb}枚目`:''].filter(Boolean).map(esc).join('・');
   const st=r.n?`<span class="badge ok">投稿済 ${r.n}・反響 ${fmt1(r.s)}</span>`:ps.length?`<span class="badge">下書きあり</span>`:v.skip?`<span class="badge">投稿しない</span>`:`<span class="badge warn">未投稿</span>`;
   return `<div class="card tap" data-act="edit-visit" data-id="${v.id}">
     <div class="hd"><span class="muted">${dlabel(v.date)}</span><span class="num"><b>${yen(v.amount)}</b></span></div>
     <div class="store">${esc(v.store||'（店舗未入力）')} <span class="muted">${esc(v.area)}</span></div>
     <div>${chips(v.casts,'cast')}${v.tags.map(t=>`<button class="badge" data-act="ftag" data-name="${esc(t)}">#${esc(t)}</button> `).join('')}</div>
+    ${ord?`<div class="muted">${ord}</div>`:''}${o.ms.length||v.quick?`<div>${o.ms.map(m=>`<span class="badge ok">🎉 ${esc(m)}</span> `).join('')}${v.quick?'<span class="badge warn">要追記</span>':''}</div>`:''}
     ${v.episode?`<div class="ep">${esc(v.episode)}</div>`:''}
-    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ" loading="lazy">`).join('')}</div>`:''}
+    ${v.photos.length?`<div class="thumbs">${v.photos.map(galImg).join('')}</div>`:''}
     <div class="row between" style="margin-top:8px">${st}${extra}</div></div>`;
 }
 function renderVisits(){
@@ -335,9 +376,15 @@ function drawVisitList(){
     return}
   const r=filtered();
   const head=`<p class="muted" style="margin:0 2px 8px">${r.length}件・合計 ${yen(sum(r,v=>v.amount))}</p>`;
-  if(ui.vseg==='gal'){const ph=r.flatMap(v=>v.photos);
-    box.innerHTML=ph.length?`<p class="muted" style="margin:0 2px 8px">写真 ${ph.length}枚</p><div class="gal">${ph.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="チェキ" loading="lazy">`).join('')}</div>`:`<div class="empty">条件に合う写真がありません。</div>`;return}
-  box.innerHTML=head+(r.length?r.map(v=>visitCard(v)).join(''):`<div class="empty">${visits.length?'条件に合う来店記録がありません。':'まだ来店記録がありません。<br>右下の「＋ 来店を記録」から始めてください。'}</div>`);
+  if(ui.vseg==='gal'){const all=r.flatMap(v=>v.photos),ph=all.filter(p=>ui.gf==='all'||(ui.gf==='used')===photoUsed(p)),nu=all.filter(photoUsed).length;
+    box.innerHTML=`<div style="margin:0 2px 8px">${[['all',`すべて ${all.length}`],['new',`未投稿 ${all.length-nu}`],['used',`投稿済 ${nu}`]].map(([k,l])=>`<button class="chip line ${ui.gf===k?'on':''}" data-act="gf" data-k="${k}">${l}</button>`).join('')}</div>`+(ph.length?`<div class="gal">${ph.map(galImg).join('')}</div>`:`<div class="empty">条件に合う写真がありません。</div>`);return}
+  // 検索語がキャスト名・店舗名に当たったら、その詳細（話したネタ・チェキ）への入口を出す
+  const toks=ui.q.toLowerCase().split(/\s+/).filter(Boolean);let hits='';
+  if(toks.length){const mk=(kind,names)=>names.filter(n=>toks.some(t=>n.toLowerCase().includes(t))).slice(0,4).map(n=>{const l=visits.filter(v=>kind==='cast'?v.casts.includes(n):v.store===n);
+    return `<div class="card tap" data-act="ent" data-kind="${kind}" data-name="${esc(n)}" style="border-color:var(--accent)"><div class="hd"><span class="store">${note(kind+':'+n).oshi?'💗 ':''}${esc(n)}</span><span class="muted">${kind==='cast'?'キャスト':'店舗'}のまとめを開く ›</span></div>
+    <div class="muted">来店 ${l.length}回・チェキ ${sum(l,v=>v.photos.length)}枚・話したネタ ${l.filter(v=>v.episode).length}件</div></div>`}).join('');
+    hits=mk('cast',uniq(visits.flatMap(v=>v.casts)))+mk('store',uniq(visits.map(v=>v.store)))}
+  box.innerHTML=hits+head+(r.length?r.map(v=>visitCard(v)).join(''):`<div class="empty">${visits.length?'条件に合う来店記録がありません。':'まだ来店記録がありません。<br>右下の「＋ 来店を記録」から始めてください。'}</div>`);
 }
 
 /* ---------- 来店フォーム ---------- */
@@ -346,12 +393,12 @@ function showDlg(html){$('#dlg').innerHTML=html;dirty=false;if(!$('#dlg').open)$
 async function closeDlg(force){if(!force&&dirty&&!await ask('入力中の内容を破棄して閉じますか？',{ok:'破棄する'}))return;dirty=false;$('#dlg').close()}
 $('#dlg').addEventListener('cancel',e=>{e.preventDefault();closeDlg()});
 $('#dlg').addEventListener('input',()=>dirty=true);
-function openVisit(id,pre){
-  const v=id?visits.find(x=>x.id===id):null,d=v||pre||{};
-  form={id:v?v.id:null,photos:v?v.photos.map(p=>({...p})):[],removed:[],planId:pre&&pre.planId||null};
+function openVisit(id,pre,quick){
+  const v=id?visits.find(x=>x.id===id):null,d=v||pre||{},H=quick?'data-more hidden':'data-more';
+  form={quick:!!quick,id:v?v.id:null,photos:v?v.photos.map(p=>({...p})):[],removed:[],planId:pre&&pre.planId||null};
   const ps=v?(byVisit.get(v.id)||[]):[];
   const fav=agg(visits.filter(x=>x.store),x=>[x.store]).sort((a,b)=>b.visits-a.visits).slice(0,6).map(o=>o.key);
-  showDlg(`<form id="vform"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${v?'来店記録を編集':'来店を記録'}</h2><button class="btn pri sm">保存</button></div>
+  showDlg(`<form id="vform"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${v?'来店記録を編集':quick?'かんたん記録':'来店を記録'}</h2><button class="btn pri sm">保存</button></div>
   <div class="dbody">
     <div class="grid2">
       <label class="f"><span>来店日</span><input type="date" name="date" required value="${d.date||today()}"></label>
@@ -360,22 +407,23 @@ function openVisit(id,pre){
     <div style="margin:-6px 0 10px">${[1000,5000,10000].map(n=>`<button type="button" class="chip line" data-act="amt" data-n="${n}">＋${n.toLocaleString()}</button>`).join('')}<button type="button" class="chip line" data-act="amt" data-n="0">クリア</button></div>
     <div class="grid2">
       <label class="f"><span>店舗</span><input type="text" name="store" list="dl-store" value="${esc(d.store)}" autocomplete="off"></label>
-      <label class="f"><span>エリア</span><input type="text" name="area" list="dl-area" value="${esc(d.area)}" autocomplete="off"></label>
+      <label class="f" ${H}><span>エリア</span><input type="text" name="area" list="dl-area" value="${esc(d.area)}" autocomplete="off"></label>
     </div>
     ${!v&&fav.length?`<div style="margin:-6px 0 10px"><span class="muted">よく行く店：</span>${fav.map(s=>`<button type="button" class="chip" data-act="pick-store" data-name="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:''}
     <label class="f"><span>キャスト（複数は「、」区切り）</span><input type="text" name="casts" value="${esc((d.casts||[]).join('、'))}" autocomplete="off"></label>
     <div id="castchips" style="margin:-6px 0 10px"></div>
-    <label class="f"><span>当日の出来事・投稿ネタ</span><textarea name="episode" rows="5" placeholder="印象に残った会話、イベント、衣装、限定メニューなど">${esc(d.episode)}</textarea></label>
-    <label class="f"><span>タグ（「、」区切り）</span><input type="text" name="tags" value="${esc((d.tags||[]).join('、'))}" autocomplete="off"></label>
-    <div id="tagchips" style="margin:-6px 0 10px"></div>
+    <label class="f"><span>${quick?'ひとことメモ（あとで追記できます）':'当日の出来事・話したネタ'}</span><textarea name="episode" rows="${quick?3:5}" placeholder="印象に残った会話、イベント、衣装、限定メニューなど">${esc(d.episode)}</textarea></label>
+    <label class="f" ${H}><span>タグ（「、」区切り）</span><input type="text" name="tags" value="${esc((d.tags||[]).join('、'))}" autocomplete="off"></label>
+    <div id="tagchips" ${H} style="margin:-6px 0 10px"></div>
     <div class="f"><span>チェキ・写真</span>
       <div class="thumbs" id="fthumbs"></div>
       <label class="btn sm" style="margin-top:8px">＋ 写真を追加<input type="file" id="fphoto" accept="image/*" multiple hidden></label>
     </div>
-    <label style="display:block;margin-bottom:12px"><input type="checkbox" name="skip" ${d.skip?'checked':''}> この来店は投稿しない（ネタ在庫から外す）</label>
+    <label ${H} style="display:block;margin-bottom:12px"><input type="checkbox" name="skip" ${d.skip?'checked':''}> この来店は投稿しない（ネタ在庫から外す）</label>
+    ${quick?`<button type="button" class="btn sm" data-act="more" style="margin-bottom:12px">くわしく入力する</button>`:''}
     ${v?`<div class="card"><h2>この来店の投稿（${ps.length}件）</h2>
-      ${ps.map(p=>`<div class="row" style="margin-bottom:6px"><span class="badge ${p.status==='posted'?'ok':''}">${p.status==='posted'?'投稿済 反響'+fmt1(score(p)):'下書き'}</span><span class="grow muted clip">${esc(p.text)}</span><button type="button" class="btn sm" data-act="edit-post" data-id="${p.id}">開く</button></div>`).join('')}
-      <button type="button" class="btn sm" data-act="new-post" data-id="${v.id}">✍️ この来店で投稿を作る</button></div>
+      ${ps.map(p=>`<div class="row" style="margin-bottom:6px"><span class="badge ok">👁 ${(+p.imps||0).toLocaleString()}</span><span class="grow muted clip">${esc(p.text)}</span><button type="button" class="btn sm" data-act="edit-post" data-id="${p.id}">開く</button></div>`).join('')}
+      <button type="button" class="btn sm" data-act="new-post" data-id="${v.id}">✍️ この来店で投稿を記録</button></div>
     <div class="row"><button type="button" class="btn" data-act="dup-visit" data-id="${v.id}">複製して新規</button><button type="button" class="btn danger" data-act="del-visit" data-id="${v.id}">削除</button></div>`:''}
   </div></form>`);
   drawFormThumbs();drawCastChips();
@@ -397,7 +445,7 @@ async function saveVisit(f){
   for(const id of form.removed)await delAsset(id);
   const old=visits.find(x=>x.id===form.id)||{};
   const v={...old,id:form.id||uid(),date:f.date.value,amount:Math.max(0,Math.round(+f.amount.value||0)),store:f.store.value.trim(),area:f.area.value.trim(),
-    casts:splitList(f.casts.value),episode:f.episode.value.trim(),tags:splitList(f.tags.value.replace(/[#＃]/g,'')),photos,skip:f.skip.checked};
+    casts:splitList(f.casts.value),episode:f.episode.value.trim(),tags:splitList(f.tags.value.replace(/[#＃]/g,'')),photos,skip:f.skip.checked,quick:!!form.quick};
   await dbPut('visits',v);
   const i=visits.findIndex(x=>x.id===v.id);if(i>=0)visits[i]=v;else visits.push(v);
   if(form.planId){await dbDel('plans',form.planId);plans=plans.filter(p=>p.id!==form.planId)}
@@ -407,7 +455,7 @@ async function saveVisit(f){
 /* ---------- キャスト・店舗の詳細 ---------- */
 function openEntity(kind,name){
   const isC=kind==='cast',list=visits.filter(v=>isC?v.casts.includes(name):v.store===name).sort((a,b)=>b.date.localeCompare(a.date));
-  const o=agg(list,()=>['x'])[0]||{visits:0,spend:0,avg:0,per:null},n=note(kind+':'+name),ph=list.flatMap(v=>v.photos);
+  const o=agg(list,()=>['x'])[0]||{visits:0,spend:0,avg:0,per:null},n=note(kind+':'+name),ph=list.flatMap(v=>v.photos),eposts=list.flatMap(v=>byVisit.get(v.id)||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const sub=isC?agg(list,v=>v.store?[v.store]:[]):agg(list,v=>v.casts);sub.sort((a,b)=>b.visits-a.visits);
   showDlg(`<div class="dhead"><button class="btn sm" data-act="close">閉じる</button><h2 class="clip">${n.oshi?'💗 ':''}${esc(name)}</h2><button class="btn sm" data-act="rename" data-kind="${kind}" data-name="${esc(name)}">名前変更</button></div>
   <div class="dbody" data-ent="${kind}:${esc(name)}">
@@ -415,16 +463,17 @@ function openEntity(kind,name){
       <div class="tile"><div class="k">来店</div><div class="v">${o.visits}<small> 回</small></div><div class="d">${list.length?`最終 ${daysAgo(list[0].date)}日前`:''}</div></div>
       <div class="tile"><div class="k">利用額</div><div class="v">${yen(o.spend)}</div><div class="d">平均 ${yen(o.avg)}</div></div>
       <div class="tile"><div class="k">反響 / 来店</div><div class="v">${o.per==null?'—':fmt1(o.per)}</div><div class="d">${M.ev.length?`全体平均 ${fmt1(M.g)}`:'投稿の反響が未入力'}</div></div>
-      <div class="tile"><div class="k">${isC?'会った店舗':'会ったキャスト'}</div><div class="d" style="font-size:12px;color:var(--ink)">${sub.slice(0,4).map(s=>`${esc(s.key)}（${s.visits}）`).join('、')||'—'}</div></div>
+      <div class="tile"><div class="k">チェキ・写真</div><div class="v">${ph.length}<small> 枚</small></div><div class="d">${isC?'店舗':'キャスト'}：${sub.slice(0,4).map(s=>`${esc(s.key)}（${s.visits}）`).join('、')||'—'}</div></div>
     </div>
     <div class="card"><h2>メモ</h2>
       ${isC?`<div class="grid2"><label class="f"><span>誕生日（月）</span><input type="number" min="1" max="12" inputmode="numeric" data-note="bm" value="${n.birthday?+n.birthday.slice(0,2):''}"></label><label class="f"><span>誕生日（日）</span><input type="number" min="1" max="31" inputmode="numeric" data-note="bd" value="${n.birthday?+n.birthday.slice(3):''}"></label></div>
       <label style="display:block;margin-bottom:10px"><input type="checkbox" data-note="oshi" ${n.oshi?'checked':''}> 推しにする（💗表示）</label>`:''}
       <textarea data-note="memo" rows="3" placeholder="${isC?'好きなもの、話した内容、呼び方など':'営業時間、料金、イベントの傾向など'}">${esc(n.memo)}</textarea>
-      <p class="muted" style="margin-top:4px">入力すると自動で保存されます。${isC?'誕生日は予定カレンダーと来店提案に反映されます。':''}</p></div>
+      <p class="muted" style="margin-top:4px">入力すると自動で保存されます。${isC?'誕生日は予定カレンダーに表示されます。':''}</p></div>
     <div class="row" style="margin-bottom:10px"><button class="btn" data-act="ent-list" data-kind="${kind}" data-name="${esc(name)}">来店一覧で見る</button><button class="btn" data-act="ent-plan" data-kind="${kind}" data-name="${esc(name)}">予定を入れる</button></div>
-    ${ph.length?`<div class="card"><h2>チェキ・写真（${ph.length}枚）</h2><div class="gal">${ph.slice(0,30).map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="" loading="lazy">`).join('')}</div></div>`:''}
-    <div class="card"><h2>来店の履歴</h2>${list.slice(0,20).map(v=>`<div class="todo tap" data-act="edit-visit" data-id="${v.id}"><div class="grow"><div class="hd"><span>${dlabel(v.date)} <span class="muted">${esc(isC?v.store:v.casts.join('、'))}</span></span><b class="num">${yen(v.amount)}</b></div>${v.episode?`<div class="muted clip">${esc(v.episode)}</div>`:''}</div></div>`).join('')||'<div class="muted">来店記録はありません。</div>'}${list.length>20?`<p class="muted">ほか ${list.length-20}件は「来店一覧で見る」から</p>`:''}</div>
+    ${ph.length?`<div class="card"><h2>チェキ・写真（${ph.length}枚）</h2><div class="gal">${ph.slice(0,60).map(galImg).join('')}</div></div>`:''}
+    <div class="card"><h2>来店の履歴・話したネタ</h2>${list.slice(0,30).map(v=>{const o=ORD.get(v.id)||{cn:{}},n=isC?o.cn[name]:o.sn;return `<div class="todo tap" data-act="edit-visit" data-id="${v.id}"><div class="grow"><div class="hd"><span><b>${n}回目</b>　${dlabel(v.date)} <span class="muted">${esc(isC?v.store:v.casts.join('、'))}</span></span><b class="num">${yen(v.amount)}</b></div>${v.episode?`<div class="ep">${esc(v.episode)}</div>`:''}</div></div>`}).join('')||'<div class="muted">来店記録はありません。</div>'}${list.length>30?`<p class="muted">ほか ${list.length-30}件は「来店一覧で見る」から</p>`:''}</div>
+    ${eposts.length?`<div class="card"><h2>載せた投稿（${eposts.length}件）</h2>${eposts.slice(0,20).map(p=>`<div class="todo tap" data-act="edit-post" data-id="${p.id}"><div class="grow"><div class="hd"><span class="muted">${p.date?dlabel(p.date):'日付未設定'}</span><span class="num muted">👁 ${(+p.imps||0).toLocaleString()}</span></div><div class="ep">${esc(p.text||'（本文なし）')}</div></div></div>`).join('')}</div>`:''}
   </div>`);
 }
 async function renameEntity(kind,old){
@@ -439,61 +488,101 @@ async function renameEntity(kind,old){
 }
 
 /* ---------- 投稿 ---------- */
-function xCount(s){let w=0;for(const c of s)w+=c.codePointAt(0)>0x10FF?2:1;return Math.ceil(w/2)}
+let formP=new Set();
+const pstat=p=>`👁 ${(+p.imps||0).toLocaleString()}　♡ ${+p.likes||0}　🔁 ${+p.reposts||0}　💬 ${+p.replies||0}${+p.follows?`　＋フォロー ${+p.follows}`:''}`;
 function renderPosts(){
-  const stock=visits.filter(isStock).sort((a,b)=>expected(b)-expected(a)||b.date.localeCompare(a.date));
-  const drafts=posts.filter(p=>p.status!=='posted'),done=posts.filter(p=>p.status==='posted').sort((a,b)=>(noMetrics(b)-noMetrics(a))||(b.date||'').localeCompare(a.date||''));
-  const seg=[['stock',`ネタ在庫 ${stock.length}`],['draft',`下書き ${drafts.length}`],['posted',`投稿済 ${done.length}`]];
-  let body='';
-  if(ui.pseg==='stock')body=stock.length?`<p class="muted" style="margin:0 2px 8px">まだ投稿に使っていない来店です。${M.ev.length>=3?'過去の実績から期待反響が高い順に並べています。':''}</p>`+stock.map(v=>visitCard(v,`<span class="row">${M.ev.length>=3?`<span class="muted">期待 ${fmt1(expected(v))}</span>`:''}<button class="btn sm" data-act="skip" data-id="${v.id}">投稿しない</button><button class="btn sm pri" data-act="new-post" data-id="${v.id}">投稿を作る</button></span>`)).join(''):`<div class="empty">未投稿の来店はありません。</div>`;
-  else{const list=ui.pseg==='draft'?drafts:done;
-    body=list.length?list.map(p=>{const v=visits.find(x=>x.id===p.visitId);
-      return `<div class="card tap" data-act="edit-post" data-id="${p.id}">
-      <div class="hd"><span class="muted">${p.date?dlabel(p.date):'日付未設定'}${p.time?' '+p.time:''}${v?`・${esc(v.store)}`:''}</span>${p.status==='posted'?(noMetrics(p)?`<span class="badge warn">反響未入力</span>`:`<b class="num">反響 ${fmt1(score(p))}</b>`):''}</div>
-      <div class="ep">${esc(p.text||'（本文なし）')}</div>
-      ${p.status==='posted'?`<div class="muted num" style="margin-top:4px">♡ ${+p.likes||0}　🔁 ${+p.reposts||0}　💬 ${+p.replies||0}　👁 ${(+p.imps||0).toLocaleString()}</div>`:''}</div>`}).join(''):`<div class="empty">${ui.pseg==='draft'?'下書きはありません。':'投稿済みの記録はありません。'}</div>`}
+  const stock=visits.filter(isStock).sort((a,b)=>b.date.localeCompare(a.date));
+  const seg=[['stock',`ネタ在庫 ${stock.length}`],['posted',`載せた投稿 ${posts.length}`]];
+  if(ui.pseg!=='stock')ui.pseg='posted';
+  const body=ui.pseg==='stock'?(stock.length?`<p class="muted" style="margin:0 2px 8px">まだ投稿に使っていない来店です。</p>`+stock.map(v=>visitCard(v,`<span class="row"><button class="btn sm" data-act="skip" data-id="${v.id}">投稿しない</button><button class="btn sm pri" data-act="new-post" data-id="${v.id}">投稿を記録</button></span>`)).join(''):`<div class="empty">未投稿の来店はありません。</div>`)
+   :`<div class="card"><h2>アナリティクスの取り込み</h2><p class="muted" style="margin-bottom:8px">Xのアナリティクスから書き出したCSVを選ぶと、該当する投稿のインプレッションなどを更新します。日別のCSVは目標（フォロワー増加・インプレッション）の実績に反映します。</p>
+      <label class="btn pri">CSVを選ぶ<input type="file" id="ana" accept=".csv,text/csv,text/plain" hidden></label></div>
+    <div class="card"><input type="search" id="pq" placeholder="投稿を検索：本文・店舗・キャスト" value="${esc(ui.pq)}"></div><div id="plist"></div>`;
   $('#main').innerHTML=`<div class="seg">${seg.map(([k,l])=>`<button data-act="pseg" data-k="${k}" class="${ui.pseg===k?'on':''}">${l}</button>`).join('')}</div>${body}
-  <button class="btn pri fab" data-act="new-post">＋ 投稿を作る</button>`;
+  <button class="btn pri fab" data-act="new-post">＋ 投稿を記録</button>`;
+  drawPostList();
+}
+function drawPostList(){
+  const box=$('#plist');if(!box)return;const toks=ui.pq.toLowerCase().split(/\s+/).filter(Boolean);
+  const list=posts.filter(p=>{if(!toks.length)return true;const v=visits.find(x=>x.id===p.visitId);return toks.every(t=>[p.text,p.date,v&&v.store,v&&v.casts.join(' '),v&&v.tags.join(' ')].join(' ').toLowerCase().includes(t))})
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  box.innerHTML=list.length?`<p class="muted" style="margin:0 2px 8px">${list.length}件・インプレッション合計 ${sum(list,p=>+p.imps||0).toLocaleString()}</p>`+list.map(p=>{const v=visits.find(x=>x.id===p.visitId),ph=v?v.photos.filter(x=>(p.photoIds||[]).includes(x.id)):[];
+    return `<div class="card tap" data-act="edit-post" data-id="${p.id}">
+    <div class="hd"><span class="muted">${p.date?dlabel(p.date):'日付未設定'}${p.time?' '+p.time:''}${v?`・${esc(v.store)}`:''}</span><span>${v?'':'<span class="badge warn">来店未設定</span> '}${noMetrics(p)?'<span class="badge warn">結果未入力</span>':''}</span></div>
+    <div class="ep">${esc(p.text||'（本文なし）')}</div>
+    ${ph.length?`<div class="thumbs">${ph.map(x=>`<img src="${x.thumb}" data-act="view" data-id="${x.id}" alt="">`).join('')}</div>`:''}
+    <div class="muted num" style="margin-top:4px">${pstat(p)}</div></div>`}).join(''):`<div class="empty">${posts.length?'条件に合う投稿がありません。':'載せた投稿を記録しておくと、あとで本文や結果を探せます。'}</div>`;
 }
 function openPost(id,visitId){
-  const p=id?posts.find(x=>x.id===id):{id:null,visitId:visitId||'',status:'draft',date:'',time:'',text:'',url:'',likes:'',reposts:'',replies:'',imps:''};
-  const vs=[...visits].sort((a,b)=>b.date.localeCompare(a.date));
-  showDlg(`<form id="pform" data-id="${p.id||''}"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${id?'投稿を編集':'投稿を作る'}</h2><button class="btn pri sm">保存</button></div>
+  const p=id?posts.find(x=>x.id===id):{id:null,visitId:visitId||'',date:'',time:'',text:'',url:'',photoIds:[]};
+  formP=new Set(p.photoIds||[]);
+  const vs=[...visits].sort((a,b)=>b.date.localeCompare(a.date)),nf=(k,l)=>`<label class="f"><span>${l}</span><input type="number" name="${k}" inputmode="numeric" min="0" value="${p[k]??''}"></label>`;
+  showDlg(`<form id="pform" data-id="${p.id||''}"><div class="dhead"><button type="button" class="btn sm" data-act="close">閉じる</button><h2>${id?'投稿の記録':'投稿を記録'}</h2><button class="btn pri sm">保存</button></div>
   <div class="dbody">
-    <label class="f"><span>元になる来店</span><select name="visitId"><option value="">（紐づけなし）</option>${vs.map(x=>`<option value="${x.id}" ${x.id===p.visitId?'selected':''}>${x.date}　${esc(x.store)}${isStock(x)?'　●未投稿':''}</option>`).join('')}</select></label>
+    <label class="f"><span>元になった来店</span><select name="visitId"><option value="">（紐づけなし）</option>${vs.map(x=>`<option value="${x.id}" ${x.id===p.visitId?'selected':''}>${x.date}　${esc(x.store)}${isStock(x)?'　●未投稿':''}</option>`).join('')}</select></label>
     <div id="pvisit"></div>
-    <label class="f"><span>本文　<b id="pcount" class="num"></b></span><textarea name="text" rows="7">${esc(p.text)}</textarea></label>
-    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="tpl">来店メモを挿入</button><button type="button" class="btn sm" data-act="copy">コピー</button><a class="btn sm" id="xlink" target="_blank" rel="noopener">Xで開く</a><button type="button" class="btn sm pri" data-act="mark-posted">投稿済みにする</button></div>
+    <label class="f"><span>載せた本文（保管用）</span><textarea name="text" rows="6">${esc(p.text)}</textarea></label>
+    <div class="row" style="margin:-4px 0 12px"><button type="button" class="btn sm" data-act="copy">本文をコピー</button>${p.url?`<a class="btn sm" href="${esc(p.url)}" target="_blank" rel="noopener">投稿を開く ↗</a>`:''}</div>
     <div class="grid2">
-      <label class="f"><span>状態</span><select name="status"><option value="draft" ${p.status!=='posted'?'selected':''}>下書き</option><option value="posted" ${p.status==='posted'?'selected':''}>投稿済</option></select></label>
-      <label class="f"><span>投稿日</span><input type="date" name="date" value="${p.date||''}"></label>
+      <label class="f"><span>投稿日</span><input type="date" name="date" value="${p.date||(id?'':today())}"></label>
       <label class="f"><span>投稿時刻（任意）</span><input type="time" name="time" value="${p.time||''}"></label>
-      <label class="f"><span>投稿URL</span><input type="url" name="url" value="${esc(p.url)}" placeholder="https://"></label>
     </div>
-    ${p.url?`<a class="btn sm" href="${esc(p.url)}" target="_blank" rel="noopener" style="margin-bottom:12px">投稿を開いて反響を確認 ↗</a>`:''}
-    <div class="card"><h2>反響（投稿後に入力・いつでも更新可）</h2><div class="grid2">
-      <label class="f"><span>♡ いいね</span><input type="number" name="likes" inputmode="numeric" min="0" value="${p.likes??''}"></label>
-      <label class="f"><span>🔁 リポスト</span><input type="number" name="reposts" inputmode="numeric" min="0" value="${p.reposts??''}"></label>
-      <label class="f"><span>💬 返信</span><input type="number" name="replies" inputmode="numeric" min="0" value="${p.replies??''}"></label>
-      <label class="f"><span>👁 インプレッション</span><input type="number" name="imps" inputmode="numeric" min="0" value="${p.imps??''}"></label>
+    <label class="f"><span>投稿URL（アナリティクス取り込みの照合に使います）</span><input type="url" name="url" value="${esc(p.url)}" placeholder="https://x.com/…/status/…"></label>
+    <div class="card"><h2>結果（CSV取り込みで自動更新・手入力も可）</h2><div class="grid2">
+      ${nf('imps','👁 インプレッション')}${nf('follows','＋ フォロー増')}${nf('likes','♡ いいね')}${nf('reposts','🔁 リポスト')}${nf('replies','💬 返信')}
     </div></div>
-    ${id?`<button type="button" class="btn danger" data-act="del-post" data-id="${id}">この投稿を削除</button>`:''}
+    ${id?`<button type="button" class="btn danger" data-act="del-post" data-id="${id}">この記録を削除</button>`:''}
   </div></form>`);
-  drawPostVisit();countPost();
+  drawPostVisit();
 }
 function drawPostVisit(){const f=$('#pform');const v=visits.find(x=>x.id===f.visitId.value);
-  const used=v?(byVisit.get(v.id)||[]).filter(p=>p.id!==f.dataset.id):[];
+  if(v)formP=new Set([...formP].filter(i=>v.photos.some(p=>p.id===i)));else formP.clear();
   $('#pvisit').innerHTML=v?`<div class="card"><div class="muted">${dlabel(v.date)}・${esc(v.store)} ${esc(v.area)}・${yen(v.amount)}</div>
     <div>${v.casts.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>
     ${v.episode?`<div style="font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.episode)}</div>`:''}
-    ${v.photos.length?`<div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="view" data-id="${p.id}" alt="">`).join('')}</div>`:''}
-    ${used.length?`<div class="muted" style="margin-top:6px">※この来店はすでに${used.length}件の投稿に使っています。</div>`:''}</div>`:''}
-function countPost(){const f=$('#pform');if(!f)return;$('#xlink').href='https://x.com/intent/post?text='+encodeURIComponent(f.text.value);$('#pcount').textContent=`${[...f.text.value].length}文字（X換算 ${xCount(f.text.value)}/140）`}
+    ${v.photos.length?`<div class="muted" style="margin-top:8px">この投稿に載せたチェキをタップで選択</div><div class="thumbs">${v.photos.map(p=>`<img src="${p.thumb}" data-act="pp" data-id="${p.id}" class="${formP.has(p.id)?'sel':''}" alt="">`).join('')}</div>`:''}</div>`:''}
 async function savePost(f){
-  const n=k=>f[k].value===''?'':Math.max(0,Math.round(+f[k].value||0));
-  const p={id:f.dataset.id||uid(),visitId:f.visitId.value||'',status:f.status.value,date:f.date.value||(f.status.value==='posted'?today():''),time:f.time.value,text:f.text.value,url:f.url.value.trim(),likes:n('likes'),reposts:n('reposts'),replies:n('replies'),imps:n('imps')};
+  const n=k=>f[k].value===''?'':Math.max(0,Math.round(+f[k].value||0)),old=posts.find(x=>x.id===f.dataset.id)||{};
+  const p={...old,id:f.dataset.id||uid(),visitId:f.visitId.value||'',status:'posted',date:f.date.value,time:f.time.value,text:f.text.value,url:f.url.value.trim(),photoIds:[...formP],
+    likes:n('likes'),reposts:n('reposts'),replies:n('replies'),imps:n('imps'),follows:n('follows')};
   await dbPut('posts',p);const i=posts.findIndex(x=>x.id===p.id);if(i>=0)posts[i]=p;else posts.push(p);
-  closeDlg(true);if(ui.tab==='posts')ui.pseg=p.status==='posted'?'posted':'draft';render();toast('保存しました');
+  closeDlg(true);if(ui.tab==='posts')ui.pseg='posted';render();toast('保存しました');
+}
+
+/* ---------- アナリティクスCSVの取り込み ---------- */
+function parseCsv(t){t=t.replace(/^﻿/,'');const first=t.split('\n')[0],sep=first.includes('\t')&&!first.includes(',')?'\t':',';const rows=[];let r=[],c='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;else if(ch===sep){r.push(c);c=''}else if(ch==='\n'){r.push(c);rows.push(r);r=[];c=''}else if(ch!=='\r')c+=ch}
+  if(c!==''||r.length){r.push(c);rows.push(r)}return rows}
+function pwhen(s){s=String(s||'').trim();const utc=/(\+0000|Z|GMT|UTC)\s*$/.test(s),d=new Date(s.replace(/^[A-Za-z]{3},\s*/,''));
+  if(utc&&!isNaN(d))return{date:ymd(d),time:`${pad(d.getHours())}:${pad(d.getMinutes())}`};
+  const m=s.match(/(\d{4})[-\/年](\d{1,2})[-\/月](\d{1,2})/),t=s.match(/(\d{1,2}):(\d{2})/),time=t?`${pad(t[1])}:${t[2]}`:'';
+  if(m)return{date:`${m[1]}-${pad(m[2])}-${pad(m[3])}`,time};return isNaN(d)?{}:{date:ymd(d),time}}
+const COLS={id:['post id','tweet id','ポストid','ツイートid','id'],link:['post link','tweet permalink','permalink','ポストのリンク','リンク','url'],text:['post text','tweet text','ポスト本文','ツイート本文','本文','text'],
+  date:['date','time','日付','日時','時間'],imps:['impressions','インプレッション数','インプレッション'],likes:['likes','いいね','いいね数'],reposts:['reposts','retweets','リポスト','リツイート','リポスト数'],
+  replies:['replies','返信','返信数'],follows:['new follows','follows','新しいフォロー','新規フォロー','フォロー数','フォロー'],unfollows:['unfollows','フォロー解除','フォロー解除数']};
+async function importAnalytics(file){
+  let rows;try{rows=parseCsv(await file.text()).filter(r=>r.some(x=>x.trim()))}catch(e){return toast('ファイルを読み込めませんでした')}
+  if(rows.length<2)return toast('データの行がありません');
+  const h=rows[0].map(x=>x.trim()),low=h.map(x=>x.toLowerCase()),c={};for(const[k,names]of Object.entries(COLS)){c[k]=-1;for(const nm of names){const i=low.indexOf(nm);if(i>=0){c[k]=i;break}}}
+  const num=(r,k)=>c[k]<0?null:Math.round(+String(r[c[k]]||'').replace(/[,\s]/g,''))||0,body=rows.slice(1),perPost=c.id>=0||c.link>=0||c.text>=0;
+  if(c.imps<0||(!perPost&&c.date<0))return ask('この形式は読み取れませんでした。\n\n見出し：'+h.join(' / ')+'\n\nこの見出しをそのままClaudeに伝えると対応できます。',{ok:'閉じる'});
+  toast('取り込んでいます…');
+  if(!perPost){let n=0;
+    for(const r of body){const d=pwhen(r[c.date]).date;if(!d)continue;const o={id:d,date:d,imps:num(r,'imps')||0,follows:num(r,'follows'),unfollows:num(r,'unfollows')};
+      const i=days.findIndex(x=>x.id===d);if(i>=0)days[i]=o;else days.push(o);await dbPut('days',o);n++}
+    render();return ask(`日別データ ${n}日分を取り込みました。\nホームの「今月の目標」に反映されます。`)}
+  const sid=x=>(String(x||'').match(/status\/(\d+)/)||[])[1]||'',norm=x=>String(x||'').replace(/\s+/g,'').slice(0,40);let up=0;const miss=[];
+  for(const r of body){const id=(c.id>=0&&String(r[c.id]).replace(/\D/g,''))||(c.link>=0&&sid(r[c.link]))||'',tx=c.text>=0?r[c.text]:'';
+    const p=posts.find(p=>id&&(p.xid===id||sid(p.url)===id))||posts.find(p=>tx&&p.text&&norm(p.text)===norm(tx));
+    const m={};for(const k of['imps','likes','reposts','replies','follows']){const v=num(r,k);if(v!==null)m[k]=v}
+    const w=c.date>=0?pwhen(r[c.date]):{},extra={xid:id,url:c.link>=0?r[c.link].trim():'',text:tx,date:w.date||'',time:w.time||''};
+    if(p){Object.assign(p,m);for(const k in extra)if(!p[k]&&extra[k])p[k]=extra[k];await dbPut('posts',p);up++}else miss.push({...m,...extra})}
+  render();
+  if(!miss.length)return ask(`${up}件の投稿の結果を更新しました。`);
+  if(await ask(`${up}件の投稿の結果を更新しました。\n\n記録にない投稿が ${miss.length}件あります。これらも「載せた投稿」として保管しますか？\n（あとで来店と紐づけられます）`,{ok:'保管する'})){
+    toast('保管しています…');for(const x of miss){const p={id:uid(),visitId:'',status:'posted',photoIds:[],...x};posts.push(p);await dbPut('posts',p)}render();toast(`${miss.length}件を保管しました`)}
 }
 
 /* ---------- 分析 ---------- */
@@ -527,7 +616,7 @@ function renderStats(){
   const per=agg(list,v=>[v.date.slice(0,7)]),pm=new Map(per.map(o=>[o.key,o]));
   const rows=k=>ms.map(m=>({label:ymLabel(m),short:`${+m.slice(5)}月`,value:(pm.get(m)||{})[k]||0}));
   const [dl,fn,isPost]=DIMS[ui.dim];let t,cols;const dash=x=>x==null?'<span class="muted">—</span>':fmt1(x);
-  if(isPost){const m=new Map();for(const p of posts){if(p.status!=='posted'||!p.date||p.date.slice(0,7)<from)continue;for(const k of fn(p)){const o=m.get(k)||{key:k,posts:0,react:0,imps:0};o.posts++;o.react+=score(p);o.imps+=+p.imps||0;m.set(k,o)}}
+  if(isPost){const m=new Map();for(const p of posts){if(!p.date||p.date.slice(0,7)<from)continue;for(const k of fn(p)){const o=m.get(k)||{key:k,posts:0,react:0,imps:0};o.posts++;o.react+=score(p);o.imps+=+p.imps||0;m.set(k,o)}}
     t=[...m.values()].map(o=>({...o,per:o.react/o.posts,impavg:o.imps/o.posts}));cols=[['key',dl],['posts','投稿'],['react','反響計'],['per','反響/投稿'],['impavg','平均インプ']];
   }else{t=agg(list,fn);cols=[['key',dl],['visits','来店'],['spend','利用額'],['avg','平均単価'],['posts','投稿'],['react','反響計'],['per','反響/来店'],['eff','反響/千円']]}
   const ts=cols.some(c=>c[0]===ui.tsort)?ui.tsort:cols[1][0];
@@ -546,18 +635,20 @@ function renderStats(){
   ${barChart('月別 来店回数',rows('visits'),v=>v+'回')}
   ${barChart('月別 利用額',rows('spend'),yen)}
   ${barChart('月別 反響スコア（来店月ベース）',rows('react'),fmt1)}
+  ${barChart('月別 インプレッション',ms.map(m=>({label:ymLabel(m),short:`${+m.slice(5)}月`,value:goalStat(m).imps.v})),v=>Math.round(v).toLocaleString())}
+  ${barChart('月別 フォロワー増加',ms.map(m=>({label:ymLabel(m),short:`${+m.slice(5)}月`,value:Math.max(0,goalStat(m).fol.v)})),v=>'+'+Math.round(v).toLocaleString())}
   <div class="card"><h2>内訳</h2>
     <div class="seg">${Object.entries(DIMS).map(([k,[l]])=>`<button data-act="dim" data-k="${k}" class="${ui.dim===k?'on':''}">${l}</button>`).join('')}</div>
     <div class="tblwrap"><table><thead><tr>${cols.map(([k,l])=>`<th data-act="tsort" data-k="${k}" class="${ts===k?'on':''}">${l}${ts===k?' ▾':''}</th>`).join('')}</tr></thead>
     <tbody>${t.map(o=>`<tr ${ent&&!o.key.startsWith('（')?`class="tap" data-act="ent" data-kind="${ent}" data-name="${esc(o.key)}"`:''}>${cols.map(([k])=>`<td class="num">${cell(o,k)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="muted">データがありません</td></tr>`}</tbody></table></div>
-    <p class="muted" style="margin-top:8px">反響スコア＝いいね×${conf.w.likes}＋リポスト×${conf.w.reposts}＋返信×${conf.w.replies}${conf.w.imps?`＋インプレッション×${conf.w.imps}`:''}（設定で変更可）。「反響/来店」「反響/千円」は投稿済みの来店だけで計算し、未投稿の来店は0点扱いにしません。${ent?'行をタップすると詳細を開きます。':''}</p>
+    <p class="muted" style="margin-top:8px">反響スコア＝${scoreLabel()}（設定で変更可）。「反響/来店」「反響/千円」は投稿済みの来店だけで計算し、未投稿の来店は0点扱いにしません。${ent?'行をタップすると詳細を開きます。':''}</p>
   </div>`;
 }
 function chartHover(e){const g=e.target.closest('g.b');if(!g)return;const c=g.closest('.chart'),d=JSON.parse(c.dataset.chart)[+g.dataset.i];
   $('.read',c).innerHTML=`<b>${esc(d[1])}</b>　${esc(d[0])}`;c.querySelectorAll('g.b path').forEach(p=>p.style.opacity=p.parentNode===g?1:.45)}
 $('#main').addEventListener('pointerover',chartHover);$('#main').addEventListener('pointerdown',chartHover);
 
-/* ---------- 予定・提案 ---------- */
+/* ---------- 予定 ---------- */
 function castStore(c){const m=new Map();visits.filter(v=>v.casts.includes(c)&&v.store).forEach(v=>m.set(v.store,(m.get(v.store)||0)+1));return[...m].sort((a,b)=>b[1]-a[1])[0]?.[0]||''}
 // 手入力のイベント＋キャスト誕生日
 function eventsIn(ym){const out=plans.filter(p=>p.type==='event'&&p.date.startsWith(ym)).map(p=>({...p}));
@@ -565,47 +656,6 @@ function eventsIn(ym){const out=plans.filter(p=>p.type==='event'&&p.date.startsW
     const date=`${ym}-${n.birthday.slice(3)}`;if(new Date(date+'T00:00:00').getMonth()+1!==+ym.slice(5))continue;
     out.push({id:'b:'+c,type:'event',auto:true,date,title:`${c} 誕生日`,cast:c,store:castStore(c)})}
   return out}
-function buildPlan(){
-  if(M.ev.length<3)return{short:M.ev.length};
-  const pm=monthsList(4).slice(0,3),past=visits.filter(v=>pm.includes(v.date.slice(0,7)));
-  const autoN=Math.max(1,Math.round(past.length/3)),autoB=Math.round(sum(past,v=>v.amount)/3/1000)*1000;
-  const N=+conf.target||autoN,budget=+conf.budget||autoB||Infinity,ym=ui.planMonth,td=today();
-  const avgCost=sum(visits,v=>v.amount)/visits.length;
-  const stores=agg(visits.filter(v=>v.store),v=>[v.store]).map(o=>{
-    const vs=visits.filter(v=>v.store===o.key).sort((a,b)=>b.date.localeCompare(a.date));
-    const cast=agg(vs,v=>v.casts).map(c=>({key:c.key,s:M.sh(c.react,c.ev)*(note('cast:'+c.key).oshi?1.1:1)})).sort((a,b)=>b.s-a.s)[0];
-    return{...o,s:M.est(M.store,o.key),cost:o.avg,last:vs[0].date,area:vs[0].area,cast:cast&&cast.key}});
-  if(!stores.length)return{short:M.ev.length};
-  const find=name=>stores.find(s=>s.key===name)||{key:name,s:M.g,cost:avgCost,ev:0,visits:0,per:null,area:'',cast:''};
-  // すでに決まっている分（当月の来店実績・登録済みの予定）
-  const done=visits.filter(v=>v.date.startsWith(ym)),fixed=plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym)&&p.date>=td);
-  let slots=N-done.length-fixed.length,rest=budget-sum(done,v=>v.amount)-sum(fixed,p=>+p.est||0);
-  const taken=new Set([...done,...fixed].map(x=>x.date)),picks=[],cnt=new Map();
-  [...done.map(v=>v.store),...fixed.map(p=>p.store)].forEach(s=>cnt.set(s,(cnt.get(s)||0)+1));
-  const add=(s,o)=>{picks.push({s,...o});cnt.set(s.key,(cnt.get(s.key)||0)+1);rest-=s.cost;slots--};
-  // 1) イベント・誕生日を優先
-  for(const e of eventsIn(ym).sort((a,b)=>a.date.localeCompare(b.date))){if(slots<=0)break;if(!e.store||e.date<td||taken.has(e.date))continue;const s=find(e.store);if(s.cost>rest)continue;
-    taken.add(e.date);add(s,{date:e.date,why:'event',title:e.title,cast:e.cast||s.cast})}
-  // 2) 残りを期待反響で選ぶ
-  const tight=budget<N*avgCost,greedy=[];
-  const explore=slots>=3?stores.filter(s=>s.ev<2&&!cnt.get(s.key)).sort((a,b)=>a.visits-b.visits||a.last.localeCompare(b.last))[0]:null;
-  while(slots>0){let best=null,bv=-1,ex=false;
-    if(explore&&slots===1&&explore.cost<=rest&&!cnt.get(explore.key)){best=explore;ex=true}
-    else for(const s of stores){if(s.cost>rest)continue;const val=s.s*Math.pow(.75,cnt.get(s.key)||0)/(tight?Math.max(s.cost,1):1);if(val>bv){bv=val;best=s}}
-    if(!best)break;const o={why:ex?'explore':'score',cast:best.cast};add(best,o);greedy.push(picks[picks.length-1])}
-  // 3) 日付の割り当て（月内に分散・反響の良い曜日を優先・行けない曜日は除外）
-  const wds=WD.map((_,i)=>M.est(M.wd,i)),[y,m]=ym.split('-').map(Number),days=new Date(y,m,0).getDate(),avail=[];
-  for(let d=1;d<=days;d++){const s=`${ym}-${pad(d)}`;if(s>=td&&!taken.has(s)&&!conf.ngWd.includes(wdOf(s)))avail.push(s)}
-  const n=Math.min(greedy.length,avail.length),dates=[];
-  for(let i=0;i<n;i++){const sg=avail.slice(Math.floor(i*avail.length/n),Math.floor((i+1)*avail.length/n));dates.push(sg.reduce((a,s)=>wds[wdOf(s)]>wds[wdOf(a)]?s:a,sg[0]))}
-  const drop=greedy.splice(n);drop.forEach(p=>picks.splice(picks.indexOf(p),1));
-  greedy.sort((a,b)=>b.s.s-a.s.s);dates.sort((a,b)=>wds[wdOf(b)]-wds[wdOf(a)]);greedy.forEach((p,i)=>p.date=dates[i]);
-  picks.sort((a,b)=>a.date.localeCompare(b.date));
-  return{picks,N,budget,autoN,autoB,tight,done:done.length,fixed:fixed.length,stores:stores.sort((a,b)=>b.s-a.s),wds,
-    cost:sum(picks,p=>p.s.cost),exp:sum(picks,p=>p.s.s)};
-}
-let lastPlan=null;
-async function addPlan(p){const pl={id:uid(),type:'plan',date:p.date,store:p.s.key,area:p.s.area,cast:p.cast||'',est:Math.round(p.s.cost),memo:p.title||''};plans.push(pl);await dbPut('plans',pl)}
 function renderPlan(){
   const ym=ui.cal,[y,m]=ym.split('-').map(Number),first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),td=today();
   const evs=eventsIn(ym),cells=[];
@@ -614,7 +664,6 @@ function renderPlan(){
     cells.push(`<button data-act="day" data-d="${s}" class="${s===td?'today ':''}${s===ui.day?'sel':''}" aria-label="${d}日">${d}<small>${'●'.repeat(Math.min(nv,3))}${'○'.repeat(Math.min(np,2))}${ne?'★':''}</small></button>`)}
   const d=ui.day,dv=visits.filter(v=>v.date===d),dp=plans.filter(p=>p.type==='plan'&&p.date===d),de=eventsIn(d.slice(0,7)).filter(e=>e.date===d);
   const up=upcoming().slice(0,8),ms=monthStat(ym),pl=plans.filter(p=>p.type==='plan'&&p.date.startsWith(ym));
-  const P=ui.showPlan?buildPlan():null;lastPlan=P;
   $('#main').innerHTML=`
   <div class="card">
     <div class="row between" style="margin-bottom:8px"><button class="btn sm" data-act="cal" data-n="-1" aria-label="前の月">‹</button><b>${ymLabel(ym)}</b><button class="btn sm" data-act="cal" data-n="1" aria-label="次の月">›</button></div>
@@ -627,42 +676,7 @@ function renderPlan(){
     ${dv.map(v=>`<div class="todo tap" data-act="edit-visit" data-id="${v.id}"><div class="grow">● <b>${esc(v.store)}</b> <span class="muted">${esc(v.casts.join('、'))}・${yen(v.amount)}</span></div></div>`).join('')}
     ${de.length+dp.length+dv.length?'':'<div class="muted">この日の記録・予定はありません。</div>'}</div>
   ${up.length?`<div class="card"><h2>これからの予定</h2>${up.map(p=>`<div class="todo tap" data-act="day" data-d="${p.date}"><div class="grow">${mdlabel(p.date)}　<b>${esc(p.type==='event'?'★ '+p.title:p.store)}</b> <span class="muted">${esc(p.type==='event'?p.store:p.cast)}</span></div></div>`).join('')}</div>`:''}
-  <div class="card"><h2>来店スケジュールの提案</h2>
-    <div class="grid2">
-      <label class="f"><span>対象月</span><input type="month" id="pl-month" value="${ui.planMonth}"></label>
-      <label class="f"><span>月の来店回数（空欄＝自動）</span><input type="number" id="pl-n" min="1" inputmode="numeric" value="${esc(conf.target)}"></label>
-      <label class="f" style="grid-column:1/-1"><span>月の予算・円（空欄＝直近3ヶ月の平均）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
-    </div>
-    <div class="f"><span>行けない曜日</span>${WD.map((w,i)=>`<button class="chip line ${conf.ngWd.includes(i)?'on':''}" data-act="ng" data-i="${i}">${w}</button>`).join('')}</div>
-    <button class="btn pri" data-act="suggest" style="width:100%">${P?'提案を更新':'提案を作る'}</button>
-  </div>
-  <div id="proposal">${P?proposalHtml(P):''}</div>`;
-}
-function proposalHtml(P){
-  if(P.short!=null)return `<div class="empty">提案にはデータがまだ足りません。<br>「投稿済」の投稿が紐づいた来店が <b>3件以上</b> 必要です（現在 ${P.short}件）。<br>投稿タブで反響（いいね等）を入力してください。</div>`;
-  const top=P.wds.map((s,i)=>({i,s})).filter(x=>M.wd.has(x.i)&&!conf.ngWd.includes(x.i)).sort((a,b)=>b.s-a.s).slice(0,2).map(x=>WD[x.i]+'曜').join('・');
-  const need=P.N-P.done-P.fixed;
-  return `<div class="tiles t3">
-    <div class="tile"><div class="k">提案</div><div class="v">${P.picks.length}<small> 回</small></div><div class="d">目標${P.N}回（済${P.done}・予定${P.fixed}）</div></div>
-    <div class="tile"><div class="k">想定利用額</div><div class="v" style="font-size:16px;line-height:1.9">${yen(P.cost)}</div><div class="d">予算 ${isFinite(P.budget)?yen(P.budget):'—'}</div></div>
-    <div class="tile"><div class="k">期待反響</div><div class="v">${fmt1(P.exp)}</div><div class="d">全体平均 ${fmt1(M.g)}/回</div></div>
-  </div>
-  ${need<=0?`<p class="muted" style="margin:0 2px 10px">${ymLabel(ui.planMonth)}は、来店済みと登録済みの予定で目標回数に達しています。</p>`:P.picks.length<need?`<p class="muted" style="margin:0 2px 10px">※予算または空き日の都合で、残り${need}回のうち${P.picks.length}回分を提案しています。</p>`:''}
-  ${P.picks.map((p,i)=>{const s=p.s,[,mm,dd]=p.date.split('-');return `<div class="card plan"><div class="d">${+mm}/${+dd}<small>${WD[wdOf(p.date)]}曜</small></div><div class="grow">
-    <div class="store">${esc(s.key)} <span class="muted">${esc(s.area)}</span> ${p.why==='explore'?'<span class="badge warn">お試し枠</span>':p.why==='event'?'<span class="badge ok">イベント</span>':''}</div>
-    ${p.cast?`<div><span class="chip">${esc(p.cast)}</span></div>`:''}
-    <div class="muted">想定 ${yen(s.cost)}・期待反響 ${fmt1(s.s)}<br>${p.why==='event'?`「${esc(p.title)}」に合わせた来店です。`:p.why==='explore'?`投稿済みの来店が${s.ev}回とデータが少ないため、傾向をつかむための枠です。`:`根拠：投稿済みの来店${s.ev}回の平均反響 ${fmt1(s.per??0)}、平均利用額 ${yen(s.cost)}`}</div>
-    <button class="btn sm" data-act="add-plan" data-i="${i}" style="margin-top:6px">予定に追加</button></div></div>`}).join('')}
-  ${P.picks.length>1?`<button class="btn" data-act="add-plan-all" style="width:100%;margin-bottom:10px">すべて予定に追加</button>`:''}
-  <div class="card"><h2>提案の考え方</h2><p class="muted">
-    ・店舗ごとの「来店あたり反響」を期待値とし、実績の少ない店舗は全体平均（${fmt1(M.g)}）に寄せて過大評価を防いでいます。<br>
-    ・登録したイベントとキャストの誕生日を最優先で入れ、来店済み・登録済みの予定は回数と予算から差し引いています。<br>
-    ・同じ店舗が続くと期待値を25%ずつ下げ、ネタの偏りを避けます。${P.tight?'<br>・予算が平均単価×回数より少ないため、反響÷利用額（コスパ）を優先しています。':''}<br>
-    ・日付は月内に分散させ、反響の良い曜日${top?`（現状は${top}）`:''}を優先。キャストはその店舗で反響が最も高い人（推しは少し優先）です。<br>
-    ・判断材料は投稿済みの来店 ${M.ev.length}件です。件数が少ないうちは参考程度にしてください。</p>
-    <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>店舗</th><th>期待反響</th><th>平均単価</th><th>評価来店</th><th>最終来店</th></tr></thead><tbody>
-    ${P.stores.map(s=>`<tr><td>${esc(s.key)}</td><td class="num">${fmt1(s.s)}</td><td class="num">${yen(s.cost)}</td><td class="num">${s.ev}/${s.visits}</td><td class="num">${s.last.slice(5).replace('-','/')}</td></tr>`).join('')}</tbody></table></div>
-  </div>`;
+`;
 }
 function openPlanForm(type,date,pre={}){
   const ev=type==='event';
@@ -672,7 +686,7 @@ function openPlanForm(type,date,pre={}){
     ${ev?`<label class="f"><span>イベント名（生誕祭、周年、コラボなど）</span><input type="text" name="title" required autocomplete="off"></label>`:''}
     <label class="f"><span>店舗</span><input type="text" name="store" list="dl-store" value="${esc(pre.store)}" ${ev?'':'required'} autocomplete="off"></label>
     <label class="f"><span>キャスト</span><input type="text" name="cast" list="dl-cast" value="${esc(pre.cast)}" autocomplete="off"></label>
-    ${ev?`<p class="muted">店舗を入れたイベントは、来店スケジュールの提案で優先されます。</p>`:`<label class="f"><span>想定利用額（空欄＝その店舗の平均）</span><input type="number" name="est" inputmode="numeric" min="0"></label>
+    ${ev?``:`<label class="f"><span>想定利用額（空欄＝その店舗の平均）</span><input type="number" name="est" inputmode="numeric" min="0"></label>
     <label class="f"><span>メモ</span><input type="text" name="memo" autocomplete="off"></label>`}
   </div></form>`);
 }
@@ -687,14 +701,14 @@ async function savePlanForm(f){
 function renderConf(){
   const ns=visits.filter(v=>v.sample).length;
   $('#main').innerHTML=`
-  <div class="card"><h2>月の予算・目標</h2><div class="grid2">
-    <label class="f"><span>月の予算（円）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
-    <label class="f"><span>月の来店回数</span><input type="number" id="pl-n" min="1" inputmode="numeric" value="${esc(conf.target)}"></label>
-  </div><p class="muted">ホームの予算バーと来店提案に使います。</p></div>
+  <div class="card"><h2>月の目標</h2><div class="grid2">
+    <label class="f"><span>フォロワー増加数（月）</span><input type="number" id="g-fol" min="0" inputmode="numeric" value="${esc(conf.goalFollow)}"></label>
+    <label class="f"><span>インプレッション（月）</span><input type="number" id="g-imp" min="0" step="1000" inputmode="numeric" value="${esc(conf.goalImps)}"></label>
+    <label class="f"><span>来店の予算・円（月）</span><input type="number" id="pl-b" min="0" step="1000" inputmode="numeric" value="${esc(conf.budget)}"></label>
+  </div><p class="muted">ホームの「今月の目標」と予算バーに使います。</p></div>
   <div class="card"><h2>反響スコアの重み</h2><div class="grid2">
-    ${[['likes','♡ いいね'],['reposts','🔁 リポスト'],['replies','💬 返信'],['imps','👁 インプレッション']].map(([k,l])=>`<label class="f"><span>${l} ×</span><input type="number" step="0.001" min="0" data-w="${k}" value="${conf.w[k]}"></label>`).join('')}
-  </div><p class="muted">重視したい指標の数値を大きくしてください。分析と提案に反映されます。</p></div>
-  <div class="card"><h2>定型ハッシュタグ</h2><input type="text" id="c-tags" value="${esc(conf.hashtags)}" placeholder="例：#もみじクライマックス"><p class="muted" style="margin-top:6px">「来店メモを挿入」で本文の末尾に付きます。</p></div>
+    ${[['likes','♡ いいね'],['reposts','🔁 リポスト'],['replies','💬 返信'],['imps','👁 インプレッション'],['follows','＋ フォロー増']].map(([k,l])=>`<label class="f"><span>${l} ×</span><input type="number" step="0.001" min="0" data-w="${k}" value="${conf.w[k]}"></label>`).join('')}
+  </div><p class="muted">来店ごとの反響を比べるときの指標です。初期設定はインプレッションのみです。</p></div>
   <div class="card"><h2>バックアップ・書き出し</h2><p class="muted" style="margin-bottom:8px">データはあなたのClaudeアカウントに保存され、同じアカウントで開けば別の端末でも同じ内容が見られます。念のため、ときどきバックアップを取ってください（写真はバックアップに含まれません）。${conf.lastBackup?`<br>前回のバックアップ：${esc(conf.lastBackup)}`:'<br>まだバックアップしていません。'}</p>
     <div class="row">${DL?`<button class="btn pri" data-act="export">バックアップを保存</button>`:''}<label class="btn">バックアップを読み込み<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
     ${DL?`<div class="row" style="margin-top:8px"><button class="btn sm" data-act="csv" data-k="visits">来店をCSVで保存</button><button class="btn sm" data-act="csv" data-k="posts">投稿をCSVで保存</button></div>`:''}</div>
@@ -703,13 +717,13 @@ function renderConf(){
 }
 async function download(name,text){try{await DL.save({filename:name,data:text});return true}catch(e){if(!e||e.code!=='declined')toast('保存できませんでした');return false}}
 async function exportAll(){
-  const data={app:'momiji-climax',version:3,exported:new Date().toISOString(),conf,visits,posts,plans,notes:[...notes.values()]};
+  const data={app:'momiji-climax',version:3,exported:new Date().toISOString(),conf,visits,posts,plans,days,notes:[...notes.values()]};
   if(await download(`momiji-backup-${today()}.json`,JSON.stringify(data))){conf.lastBackup=today();saveConf();render()}
 }
 function exportCsv(kind){
   const q=x=>`"${String(x??'').replace(/"/g,'""')}"`;let rows;
   if(kind==='visits')rows=[['来店日','エリア','店舗','キャスト','利用額','出来事','タグ','投稿数','反響'],...[...visits].sort((a,b)=>a.date.localeCompare(b.date)).map(v=>{const r=react(v);return[v.date,v.area,v.store,v.casts.join('、'),v.amount,v.episode,v.tags.join('、'),r.n,r.s]})];
-  else rows=[['投稿日','時刻','状態','店舗','本文','URL','いいね','リポスト','返信','インプレッション','反響スコア'],...[...posts].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(p=>[p.date,p.time,p.status==='posted'?'投稿済':'下書き',visits.find(v=>v.id===p.visitId)?.store,p.text,p.url,p.likes,p.reposts,p.replies,p.imps,score(p)])];
+  else rows=[['投稿日','時刻','状態','店舗','本文','URL','いいね','リポスト','返信','インプレッション','反響スコア'],...[...posts].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(p=>[p.date,p.time,'投稿済',visits.find(v=>v.id===p.visitId)?.store,p.text,p.url,p.likes,p.reposts,p.replies,p.imps,score(p)])];
   download(`momiji-${kind}-${today()}.csv`,'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'));
 }
 async function importAll(file){
@@ -731,7 +745,7 @@ async function addSample(){
       episode:'（サンプル）当日の出来事メモ',tags:ev?['イベント']:[],photos:[],sample:true};
     await dbPut('visits',v);
     if(rnd()<.75){const base=s[4]*wk*(ev?1.5:1)*(.5+rnd());
-      await dbPut('posts',{id:uid(),visitId:v.id,status:'posted',date,time:`${pad(8+Math.floor(rnd()*15))}:00`,text:'（サンプル）投稿本文',url:'',likes:Math.round(base*.7),reposts:Math.round(base*.1),replies:Math.round(base*.05),imps:Math.round(base*40),sample:true})}
+      await dbPut('posts',{id:uid(),visitId:v.id,status:'posted',date,time:`${pad(8+Math.floor(rnd()*15))}:00`,text:'（サンプル）投稿本文',url:'',likes:Math.round(base*.7),reposts:Math.round(base*.1),replies:Math.round(base*.05),imps:Math.round(base*40),follows:Math.round(base*.03),photoIds:[],sample:true})}
   }
   await load();render();toast('サンプルデータを追加しました');
 }
@@ -744,7 +758,8 @@ document.addEventListener('click',async e=>{
   if(a==='goto')return go(D.tab,{pseg:D.seg});
   if(a==='view')return openViewer(id);
   if(a==='view-form'){const p=form.photos[+D.i];return openViewer(p.id,p.data)}
-  if(a==='new-visit')return openVisit(null,D.d?{date:D.d}:null);
+  if(a==='new-visit')return openVisit(null,D.d?{date:D.d}:null,true);
+  if(a==='more'){document.querySelectorAll('#vform [data-more]').forEach(x=>x.hidden=false);form.quick=false;return el.remove()}
   if(a==='edit-visit')return openVisit(id);
   if(a==='dup-visit'){const v=visits.find(x=>x.id===id);return openVisit(null,{store:v.store,area:v.area,casts:v.casts,amount:v.amount,tags:[]})}
   if(a==='close')return closeDlg();
@@ -765,12 +780,12 @@ document.addEventListener('click',async e=>{
   if(a==='edit-post')return openPost(id);
   if(a==='del-post'){if(!await ask('この投稿を削除しますか？',{ok:'削除'}))return;const p=posts.find(x=>x.id===id);await dbDel('posts',id);posts=posts.filter(x=>x.id!==id);closeDlg(true);render();
     return toast('削除しました',async()=>{await dbPut('posts',p);posts.push(p);render()})}
-  if(a==='tpl'){const f=$('#pform'),v=visits.find(x=>x.id===f.visitId.value);if(!v)return toast('元になる来店を選んでください');
-    const t=[[v.store,v.area&&`（${v.area}）`].filter(Boolean).join(''),v.casts.join('、'),'',v.episode,'',[...v.tags.map(t=>'#'+t),conf.hashtags].filter(Boolean).join(' ')].join('\n').replace(/\n{3,}/g,'\n\n').trim();
-    f.text.value=f.text.value?f.text.value+'\n'+t:t;dirty=true;return countPost()}
   if(a==='copy'){try{await navigator.clipboard.writeText($('#pform').text.value);toast('コピーしました')}catch(_){$('#pform').text.select();toast('本文を選択しました。そのままコピーしてください')}return}
-    if(a==='mark-posted'){const f=$('#pform'),n=new Date();f.status.value='posted';if(!f.date.value)f.date.value=today();if(!f.time.value)f.time.value=`${pad(n.getHours())}:${pad(n.getMinutes())}`;dirty=true;return toast('投稿済みにしました。保存を押してください')}
   if(a==='vseg'){ui.vseg=D.k;return render()}
+  if(a==='gf'){ui.gf=D.k;return drawVisitList()}
+  if(a==='pp'){formP.has(id)?formP.delete(id):formP.add(id);el.classList.toggle('sel');dirty=true;return}
+  if(a==='fol-rec'){const n=Math.round(+$('#fnow').value);if(!(n>=0)||$('#fnow').value==='')return toast('フォロワー数を入力してください');
+    conf.followers=[...(conf.followers||[]).filter(x=>x.date!==today()),{date:today(),count:n}];saveConf();render();return toast('記録しました')}
   if(a==='pseg'){ui.pseg=D.k;return render()}
   if(a==='range'){ui.range=D.k;return render()}
   if(a==='dim'){ui.dim=D.k;return render()}
@@ -789,10 +804,6 @@ document.addEventListener('click',async e=>{
   if(a==='new-event')return openPlanForm('event',D.d);
   if(a==='del-plan'){const p=plans.find(x=>x.id===id);await dbDel('plans',id);plans=plans.filter(x=>x.id!==id);render();return toast('取り消しました',async()=>{await dbPut('plans',p);plans.push(p);render()})}
   if(a==='plan-rec'){const p=plans.find(x=>x.id===id);return openVisit(null,{date:p.date,store:p.store,area:p.area,casts:p.cast?[p.cast]:[],planId:p.id})}
-  if(a==='ng'){const i=+D.i;conf.ngWd=conf.ngWd.includes(i)?conf.ngWd.filter(x=>x!==i):[...conf.ngWd,i];saveConf();return render()}
-  if(a==='suggest'){ui.showPlan=true;render();return $('#proposal').scrollIntoView({behavior:'smooth',block:'start'})}
-  if(a==='add-plan'){const p=lastPlan.picks[+D.i];await addPlan(p);ui.day=p.date;ui.cal=p.date.slice(0,7);render();return toast('予定に追加しました')}
-  if(a==='add-plan-all'){for(const p of lastPlan.picks)await addPlan(p);ui.cal=ui.planMonth;render();scrollTo(0,0);return toast('すべて予定に追加しました')}
   if(a==='export')return exportAll();
   if(a==='csv')return exportCsv(D.k);
   if(a==='sample')return addSample();
@@ -804,7 +815,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target;if(f.id==='vform')saveVisit(f);if(f.id==='pform')savePost(f);if(f.id==='plform')savePlanForm(f)});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='q'){ui.q=t.value;return drawVisitList()}
-  if(t.name==='text'&&t.form?.id==='pform')return countPost();
+  if(t.id==='pq'){ui.pq=t.value;return drawPostList()}
   if(['store','casts','tags'].includes(t.name)&&t.form?.id==='vform')return drawCastChips();
 });
 document.addEventListener('change',async e=>{const t=e.target;
@@ -816,18 +827,18 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset.note){const box=t.closest('[data-ent]'),n={...note(box.dataset.ent)},g=k=>$(`[data-note=${k}]`,box);
     n.memo=g('memo').value.trim();if(g('oshi')){n.oshi=g('oshi').checked;const bm=+g('bm').value,bd=+g('bd').value;n.birthday=bm>=1&&bm<=12&&bd>=1&&bd<=31?`${pad(bm)}-${pad(bd)}`:''}
     await saveNote(n);dirty=false;render();return toast('メモを保存しました')}
-  if(t.id==='pl-month'&&t.value){ui.planMonth=t.value;return render()}
-  if(t.id==='pl-n'){conf.target=t.value;saveConf();return render()}
   if(t.id==='pl-b'){conf.budget=t.value;saveConf();return render()}
+  if(t.id==='g-fol'){conf.goalFollow=t.value;return saveConf()}
+  if(t.id==='g-imp'){conf.goalImps=t.value;return saveConf()}
+  if(t.id==='ana'&&t.files[0]){const f=t.files[0];t.value='';return importAnalytics(f)}
   if(t.dataset.w){conf.w[t.dataset.w]=Math.max(0,+t.value||0);return saveConf()}
-  if(t.id==='c-tags'){conf.hashtags=t.value.trim();return saveConf()}
   if(t.id==='imp'&&t.files[0]){await importAll(t.files[0]);t.value=''}
 });
 
 /* ---------- boot ---------- */
 async function load(){
-  const[v,p,pl,n,c]=await Promise.all([dbAll('visits'),dbAll('posts'),dbAll('plans'),dbAll('notes'),base.get()]);
-  visits=v;posts=p;plans=pl;notes=new Map(n.map(x=>[x.id,x]));
+  const[v,p,pl,n,c,dy]=await Promise.all([dbAll('visits'),dbAll('posts'),dbAll('plans'),dbAll('notes'),base.get(),dbAll('days')]);
+  visits=v;posts=p;plans=pl;days=dy;notes=new Map(n.map(x=>[x.id,x]));
   const cf=c.exists&&c.data().conf;if(cf){const o=clean(cf);conf={...DEF,...o,w:{...DEF.w,...(o.w||{})}}}
   visits.forEach(v=>{v.casts||=[];v.tags||=[];v.photos||=[];v.amount=+v.amount||0})}
 let ready=false,loadedAt=0;
